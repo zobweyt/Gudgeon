@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	  <UserSecretsId>74027b1a-c21d-4abb-a9fd-8667900e09b8</UserSecretsId>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="Properties\launchSettings.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Discord.Addons.Hosting" Version="5.1.0" />
+		<PackageReference Include="Discord.Net.Interactions" Version="3.7.2" />
+		<PackageReference Include="Fergun.Interactive" Version="1.6.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.*" />
+	</ItemGroup>
+
+</Project>
