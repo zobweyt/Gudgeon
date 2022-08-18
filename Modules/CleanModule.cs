@@ -19,12 +19,13 @@ public class CleanModule : GudgeonModuleBase
         var youngMessages = messages.Where(x => x.Timestamp > DateTime.Now.AddDays(-14)).Skip(1);
         await CleanMessagesAsync(youngMessages);
 
-        return GudgeonResult.FromSuccess($"**{youngMessages.Count()}** messages been successfully cleaned.", true);
+        return GudgeonResult.FromSuccess($"**{youngMessages.Count()}** messages been successfully cleaned.", TimeSpan.FromSeconds(8));
     }
     private async Task CleanMessagesAsync(IEnumerable<IMessage> messages)
     {
         await ModifyWithStyleAsync(new ProcessingStyle(), $"**{messages.Count()}** messages is being processed {Emojis.Animated.Loading}");
-        await (Context.Channel as SocketTextChannel).DeleteMessagesAsync(messages);
+        if (Context.Channel is SocketTextChannel channel)
+            await channel.DeleteMessagesAsync(messages);
     }
     private bool IsBeyoundLimit(int amount)
     {

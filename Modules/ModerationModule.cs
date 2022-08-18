@@ -4,10 +4,10 @@ using Discord.WebSocket;
 
 namespace Gudgeon.Modules;
 
-[RequireBotPermission(GuildPermission.BanMembers)]
 [RequireUserPermission(GuildPermission.Administrator)]
 public class ModerationModule : GudgeonModuleBase
 {
+    [RequireBotPermission(GuildPermission.BanMembers)]
     [SlashCommand("ban", "Bans a member")]
     public async Task<RuntimeResult> BanAsync(
         [Summary("user", "The user to be banned")] SocketGuildUser user,
@@ -20,15 +20,16 @@ public class ModerationModule : GudgeonModuleBase
         return GudgeonResult.FromSuccess($"{user.Username}#{user.Discriminator} has been banned.");
     }
 
+    [RequireBotPermission(GuildPermission.ModerateMembers)]
     [SlashCommand("timeout", "Timeouts a member")]
     public async Task<RuntimeResult> TimeoutAsync(
         [Summary("user", "The user to be timed out")] SocketGuildUser user,
-        [Summary("time", "The time of timeout (30s, 15m, 2d)")] TimeSpan time)
+        [Summary("span", "The span of timeout (30s, 15m, 2d)")] TimeSpan span)
     {
         if (user.IsHierarchyHigher())
             return GudgeonResult.FromError($"{user.Mention} hierarchy is higher than bot's.");
-
-        await user.SetTimeOutAsync(time);
-        return GudgeonResult.FromSuccess($"{user.Username}#{user.Discriminator} has been timed out.");
+        
+        await user.SetTimeOutAsync(span);
+        return GudgeonResult.FromSuccess($"{user.Mention} has been timed out until <t:{(DateTimeOffset.Now + span).ToUnixTimeSeconds()}:t>.");
     }
 }

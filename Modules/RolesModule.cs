@@ -10,11 +10,13 @@ namespace Gudgeon.Modules;
 public class RolesModule : GudgeonModuleBase
 {
     [SlashCommand("add-everyone", "Adds the selected role to everyone")]
-    public async Task<RuntimeResult> RoleAddEveryoneAsync([Summary("role", "The role to add")] SocketRole role)
+    public async Task<RuntimeResult> RoleAddEveryoneAsync(
+        [Summary("role", "The role to add")] SocketRole role)
         => await RoleEveryoneAsync(role, false);
 
     [SlashCommand("remove-everyone", "Removes the selected role from everyone")]
-    public async Task<RuntimeResult> RoleRemoveEveryoneAsync([Summary("role", "The role to remove")] SocketRole role)
+    public async Task<RuntimeResult> RoleRemoveEveryoneAsync(
+        [Summary("role", "The role to remove")] SocketRole role)
         => await RoleEveryoneAsync(role, true);
 
     public async Task<RuntimeResult> RoleEveryoneAsync(SocketRole role, bool remove)
@@ -25,7 +27,7 @@ public class RolesModule : GudgeonModuleBase
         var users = Context.Guild.Users.Where(x => x.IsBot == false && x.GuildPermissions.Administrator == false && x.Roles.Contains(role) == remove).ToList();
         await ApplyRolesAsync(users, role, remove);
 
-        return GudgeonResult.FromSuccess($"Applied **{users.Count}** roles.", true);
+        return GudgeonResult.FromSuccess($"Applied **{users.Count}** roles.", TimeSpan.FromSeconds(8));
     }
 
     private async Task ApplyRolesAsync(List<SocketGuildUser> users, SocketRole role, bool remove)
@@ -37,6 +39,9 @@ public class RolesModule : GudgeonModuleBase
     }
     private async Task ApplyRoleAsync(SocketGuildUser? user, SocketRole role, bool remove)
     {
+        if (user == null)
+            return;
+
         if (remove)
             await user.RemoveRoleAsync(role);
         else
