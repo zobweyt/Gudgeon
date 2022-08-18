@@ -20,9 +20,8 @@ internal class Program
                     MessageCacheSize = 200,
                     GatewayIntents = GatewayIntents.All
                 };
-                    
-                var token = context.Configuration["Token"];
-                config.Token = token;
+                
+                config.Token = context.Configuration["Token"];
             })
             .UseInteractionService((context, config) =>
             {
