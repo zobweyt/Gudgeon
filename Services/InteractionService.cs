@@ -31,6 +31,7 @@ internal sealed partial class InteractionHandler : DiscordClientService
         await _service.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
 
         await Client.WaitForReadyAsync(stoppingToken);
+        await Client.SetGameAsync("swiming", type: ActivityType.Competing);
         await RegisterCommandsAsync();
     }
 
