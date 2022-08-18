@@ -4,16 +4,16 @@ namespace Gudgeon;
 
 public class GudgeonResult : RuntimeResult
 {
-    private GudgeonResult(InteractionCommandError? error, string description, bool autoDelete)
-        : base(error, description)
+    private GudgeonResult(InteractionCommandError? error, string message, TimeSpan? delayedDeleteDuration)
+        : base(error, message)
     {
-        AutoDelete = autoDelete;
+        DelayedDeleteDuration = delayedDeleteDuration;
     }
 
-    public bool AutoDelete { get; }
+    public TimeSpan? DelayedDeleteDuration { get; }
 
-    public static GudgeonResult FromSuccess(string? description = null, bool autoDelete = false)
-        => new(null, description ?? string.Empty, autoDelete);
-    public static GudgeonResult FromError(string description, bool autoDelete = true)
-        => new(InteractionCommandError.Unsuccessful, description, autoDelete);
+    public static GudgeonResult FromSuccess(string? message = null, TimeSpan? delayedDeleteDuration = null)
+        => new(null, message ?? string.Empty, delayedDeleteDuration);
+    public static GudgeonResult FromError(string message, TimeSpan? delayedDeleteDuration = null)
+        => new(InteractionCommandError.Unsuccessful, message, delayedDeleteDuration);
 }
