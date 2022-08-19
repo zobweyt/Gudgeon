@@ -7,34 +7,30 @@ namespace Gudgeon.Services;
 
 internal sealed partial class InteractionHandler : DiscordClientService
 {
-    private async Task InteractionCreatedAsync(SocketInteraction interaction)
+    private Task InteractionCreatedAsync(SocketInteraction interaction)
     {
         if (interaction.Type == InteractionType.ApplicationCommand)
-            await interaction.RespondWithStyleAsync(new ProcessingStyle(), $"The bot is thinking {Emojis.Animated.Loading}");
+            _ = interaction.RespondWithStyleAsync(new ProcessingStyle(), $"The bot is thinking {Emojis.Animated.Loading}");
 
         try
         {
             var context = new SocketInteractionContext(Client, interaction);
-            await _service.ExecuteCommandAsync(context, _provider);
+            _ = _service.ExecuteCommandAsync(context, _provider);
         }
         catch (Exception exception)
         {
             Logger.LogError(exception, "Exception occurred whilst attempting to handle interaction.");
-
-            if (interaction.Type == InteractionType.ApplicationCommand)
-            {
-                var message = await interaction.GetOriginalResponseAsync();
-                await message.DeleteAsync();
-            }
         }
+
+        return Task.CompletedTask;
     }
-    private async Task InteractionExecutedAsync(ICommandInfo command, IInteractionContext context, IResult result)
+    private Task InteractionExecutedAsync(ICommandInfo command, IInteractionContext context, IResult result)
     {
         if (string.IsNullOrEmpty(result.ErrorReason))
-            return;
+            return Task.CompletedTask;
 
         EmbedStyle style = result.IsSuccess ? new SuccessStyle() : new ErrorStyle();
-        await context.Interaction.ModifyWithStyleAsync(style, result.ErrorReason);
+        _ = context.Interaction.ModifyWithStyleAsync(style, result.ErrorReason);
 
         TimeSpan? span = result is GudgeonResult gudgeonResult ? gudgeonResult.DelayedDeleteDuration : null;
 
@@ -42,6 +38,8 @@ internal sealed partial class InteractionHandler : DiscordClientService
             span = result.Error != InteractionCommandError.Exception ? span == null ? TimeSpan.FromSeconds(8) : span : null;
 
         if (span != null)
-            await context.Interaction.DelayedDeleteResponseAsync(span.Value);
+            _ = context.Interaction.DelayedDeleteResponseAsync(span.Value);
+
+        return Task.CompletedTask;
     }
 }
