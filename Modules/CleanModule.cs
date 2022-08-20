@@ -8,12 +8,15 @@ namespace Gudgeon.Modules;
 [RequireBotPermission(ChannelPermission.ManageMessages)]
 public class CleanModule : GudgeonModuleBase
 {
+    public static int LowerCleanLimit { get { return 2; } }
+    public static int UpperCleanLimit { get { return 500; } }
+
     [SlashCommand("clean", "Deletes multiple channel messages")]
     public async Task<RuntimeResult> CleanAsync(
-        [Summary("amount", "The number of messages to clean up between 2 and 500")] int amount)
+        [Summary("amount", $"The number of messages to clean up between 2 and 500")] int amount)
     {
         if (IsBeyoundLimit(amount))
-            return GudgeonResult.FromError($"Can not clean **{amount}** messages, `amount` should be between **2** and **500**.");     
+            return GudgeonResult.FromError($"Can not clean **{amount}** messages, `amount` should be between **{LowerCleanLimit}** and **{UpperCleanLimit}**.");     
 
         var messages = await Context.Channel.GetMessagesAsync(amount + 1).FlattenAsync();
         var youngMessages = messages.Where(x => x.Timestamp > DateTime.Now.AddDays(-14)).Skip(1);
@@ -27,9 +30,10 @@ public class CleanModule : GudgeonModuleBase
         if (Context.Channel is SocketTextChannel channel)
             await channel.DeleteMessagesAsync(messages);
     }
+
     private bool IsBeyoundLimit(int amount)
     {
-        if (amount < 2 || amount > 500)
+        if (amount < LowerCleanLimit || amount > UpperCleanLimit)
             return true;
         return false;
     }
