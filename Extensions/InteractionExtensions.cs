@@ -29,9 +29,11 @@ internal static class InteractionExtensions
         }
 
         if (interaction is IComponentInteraction component)
+        {
             await component.UpdateAsync(AddProperties);
-        else
-            await interaction.ModifyOriginalResponseAsync(AddProperties);
+            return;
+        }
+        await interaction.ModifyOriginalResponseAsync(AddProperties);
     }
 
     public static async Task RespondWithStyleAsync(this IDiscordInteraction interaction, EmbedStyle style, string? message)
