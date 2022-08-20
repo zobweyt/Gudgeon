@@ -1,15 +1,9 @@
 {
   "profiles": {
-    "Development": {
+    "Gudgeon": {
       "commandName": "Project",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
-      }
-    },
-    "Production": {
-      "commandName": "Project",
-      "environmentVariables": {
-        "DOTNET_ENVIRONMENT": "Production"
       }
     }
   }
