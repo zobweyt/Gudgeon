@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Addons.Hosting;
 using Discord.WebSocket;
-using Fergun.Interactive;
 using Gudgeon.Services;
 
 namespace Gudgeon;
@@ -20,7 +19,7 @@ internal class Program
                     MessageCacheSize = 200,
                     GatewayIntents = GatewayIntents.All
                 };
-                
+
                 config.Token = context.Configuration["Token"];
             })
             .UseInteractionService((context, config) =>
@@ -31,8 +30,7 @@ internal class Program
             .ConfigureServices((context, services) =>
             {
                 services
-                .AddHostedService<InteractionHandler>()
-                .AddTransient<InteractiveService>();
+                .AddHostedService<InteractionHandler>();
             })
             .Build();
 
