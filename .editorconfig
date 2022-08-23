@@ -80,6 +80,18 @@ dotnet_naming_style.pascal_case.required_suffix =
 dotnet_naming_style.pascal_case.word_separator = 
 dotnet_naming_style.pascal_case.capitalization = pascal_case
 
+# IDE0008: Использование явного типа
+dotnet_diagnostic.IDE0008.severity = none
+
+# CS8602: Разыменование вероятной пустой ссылки.
+dotnet_diagnostic.CS8602.severity = none
+
+# CS8604: Возможно, аргумент-ссылка, допускающий значение NULL.
+dotnet_diagnostic.CS8604.severity = none
+
+# CS8629: Тип значения, допускающего NULL, может быть NULL.
+dotnet_diagnostic.CS8629.severity = none
+
 [*.vb]
 #### Стили именования ####
 
