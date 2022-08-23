@@ -7,11 +7,8 @@ namespace Gudgeon.Services;
 
 internal sealed partial class InteractionHandler : DiscordClientService
 {
-    private Task InteractionCreatedAsync(SocketInteraction interaction)
+    private Task InteractionCreated(SocketInteraction interaction)
     {
-        if (interaction.Type == InteractionType.ApplicationCommand)
-            _ = interaction.RespondWithStyleAsync(new ProcessingStyle(), $"The bot is thinking {Emojis.Animated.Loading}");
-
         try
         {
             var context = new SocketInteractionContext(Client, interaction);
@@ -24,19 +21,19 @@ internal sealed partial class InteractionHandler : DiscordClientService
 
         return Task.CompletedTask;
     }
-    private Task InteractionExecutedAsync(ICommandInfo command, IInteractionContext context, IResult result)
+    private Task InteractionExecuted(ICommandInfo command, IInteractionContext context, IResult result)
     {
         if (string.IsNullOrEmpty(result.ErrorReason))
             return Task.CompletedTask;
 
         EmbedStyle style = result.IsSuccess ? new SuccessStyle() : new ErrorStyle();
-        _ = context.Interaction.ModifyWithStyleAsync(style, result.ErrorReason);
 
-        TimeSpan? span = result is GudgeonResult gudgeonResult ? gudgeonResult.DelayedDeleteDuration : null;
+        if (context.Interaction.HasResponded)
+            _ = context.Interaction.ModifyWithStyleAsync(style, result.ErrorReason);
+        else
+            _ = context.Interaction.RespondWithStyleAsync(style, result.ErrorReason);
 
-        if (!result.IsSuccess)
-            span = result.Error != InteractionCommandError.Exception ? span == null ? TimeSpan.FromSeconds(8) : span : null;
-
+        TimeSpan? span = result is GudgeonResult gudgeonResult ? gudgeonResult.DeletionDelay : TimeSpan.FromSeconds(8);
         if (span != null)
             _ = context.Interaction.DelayedDeleteResponseAsync(span.Value);
 

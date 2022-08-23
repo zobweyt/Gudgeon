@@ -25,8 +25,8 @@ internal sealed partial class InteractionHandler : DiscordClientService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        Client.InteractionCreated += InteractionCreatedAsync;
-        _service.InteractionExecuted += InteractionExecutedAsync;
+        Client.InteractionCreated += InteractionCreated;
+        _service.InteractionExecuted += InteractionExecuted;
 
         await _service.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
 

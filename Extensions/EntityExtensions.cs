@@ -1,39 +1,31 @@
 ﻿using Discord;
+using Discord.WebSocket;
 
 namespace Gudgeon;
 
 internal static class EntityExtensions
 {
-    public static bool HasHigherHierarchy(this IRole role, bool respond = false, IDiscordInteraction? interaction = null)
+    public static bool HasHigherHierarchy(this IRole role, IGuildUser user)
     {
-        bool condition = role.IsManaged 
-            || role.Position >= role.Guild.GetCurrentUserAsync().Result.Hierarchy;
-        return CheckHierarchy(condition, respond, interaction);
+        if (role.IsManaged
+            || role.Position >= user.Hierarchy)
+            return true;
+        return false;
     }
-    public static bool HasHigherHierarchy(this IGuildUser user, bool respond = false, IDiscordInteraction? interaction = null)
+    public static bool HasHigherHierarchy(this IGuildUser target, IGuildUser user)
     {
-        bool condition = user.Guild.OwnerId == user.Id 
-            || user.GuildPermissions.Administrator 
-            || user.Hierarchy >= user.Guild.GetCurrentUserAsync().Result.Hierarchy;
-        return CheckHierarchy(condition, respond, interaction);
+        if (target.Guild.OwnerId == target.Id
+            || target.GuildPermissions.Administrator
+            || target.Hierarchy >= user.Hierarchy)
+            return true;
+        return false;
     }
-
-    private static bool CheckHierarchy(bool condition, bool respond, IDiscordInteraction? interaction)
+    public static bool CanAccess(this IGuildChannel channel, IGuildUser user)
     {
-        if (!condition)
-            return false;
-
-        if (respond)
-            HierarchyErrorResponse(interaction);
-        return true;
-    }
-
-    private static void HierarchyErrorResponse(IDiscordInteraction? interaction)
-    {
-        if (interaction == null)
-            return;
-
-        _ = interaction.ModifyWithStyleAsync(new ErrorStyle(), $"Target's hierarchy is higher that bot's.");
-        _ = interaction.DelayedDeleteResponseAsync(TimeSpan.FromSeconds(10));
+        var channels = (channel.Guild as SocketGuild).Channels.Where(x => x.Users.Contains(user));
+        
+        if (channels.Any(x => x.Id == channel.Id))
+            return true;
+        return false;
     }
 }
