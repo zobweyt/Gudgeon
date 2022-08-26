@@ -2,17 +2,16 @@
   <a href="https://github.com/Zobweyt/Gudgeon">
     <img src="https://user-images.githubusercontent.com/98274273/185745883-19afa5bc-d5f8-49e9-973e-7ddcd7c5e213.png" alt="Gudgeon" width="220" height="220">
   </a>
-
-  <h3 align="center">Gudgeon</h3>
-
   <p align="center">
-    A multi-function Discord bot specialized in long-term operations.
+    <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/w/zobweyt/Gudgeon">
+    <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/zobweyt/Gudgeon">
+  </p>
+  <p align="center">
+    Gudgeon. Multi-purpose Discord bot.
   </p>
 </p>
 
-
-
-<details open="open">
+<details>
   <summary>Table of Contents</summary>
   <ol>
     <li>
@@ -26,7 +25,6 @@
       </ul>
     </li>
     <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
   </ol>
 </details>
 
@@ -34,7 +32,7 @@
 
 ## About the project
 
-Gudgeon is a multi-function Discord bot specialized in long-term operations. It provides the server with all features the server may need. It is an open-source project, allowing all of the community's members to contribute and see their code live in action.
+Gudgeon is a multi-purpose Discord bot. It provides the server with all features the server may need. It is an open-source project, allowing all of the community's members to contribute and see their code live in action.
 
 
 
@@ -42,9 +40,13 @@ Gudgeon is a multi-function Discord bot specialized in long-term operations. It 
 
 To get a local copy up and running, follow these simple steps.
 
+
+
 ### Prerequisites
 
 * [.NET 6.0](https://dotnet.microsoft.com/download)
+
+
 
 ### Installation
 
@@ -59,10 +61,3 @@ To get a local copy up and running, follow these simple steps.
 ## License
 
 Distributed under the MIT License. See [LICENSE](https://github.com/Zobweyt/Gudgeon/blob/master/LICENSE.txt) for more information.
-
-
-
-## Contact
-
-📧 zobweyt@gmail.com <br>
-🌐 https://dsc.gg/zobweyt
