@@ -9,6 +9,13 @@ namespace Gudgeon.Services;
 
 internal sealed partial class InteractionHandler : DiscordClientService
 {
+    private static List<ulong>? _limitedGuilds = new();
+    public static List<ulong>? LimitedGuilds
+    {
+        get { return _limitedGuilds; }
+        private set { _limitedGuilds = value; }
+    }
+
     private readonly IServiceProvider _provider;
     private readonly InteractionService _service;
     private readonly IHostEnvironment _environment;
@@ -37,14 +44,19 @@ internal sealed partial class InteractionHandler : DiscordClientService
 
     private async Task RegisterCommandsAsync()
     {
+        ulong? devGuild = _configuration.GetValue<ulong>("DevGuild");
+
+        if (devGuild == null || devGuild == 0)
+            throw new ArgumentException("The devGuild is null or zero", nameof(devGuild));
+
         if (_environment.IsDevelopment())
         {
             await Client.Rest.DeleteAllGlobalCommandsAsync();
-            await _service.RegisterCommandsToGuildAsync(_configuration.GetValue<ulong>("DevGuild"));
+            await _service.RegisterCommandsToGuildAsync(devGuild.Value);
             return;
         }
 
-        await Client.Rest.BulkOverwriteGuildCommands(Array.Empty<ApplicationCommandProperties>(), _configuration.GetValue<ulong>("DevGuild"));
+        await Client.Rest.BulkOverwriteGuildCommands(Array.Empty<ApplicationCommandProperties>(), devGuild.Value);
         await _service.RegisterCommandsGloballyAsync();
     }
 }

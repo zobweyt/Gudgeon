@@ -20,7 +20,12 @@ internal class Program
                     GatewayIntents = GatewayIntents.All
                 };
 
-                config.Token = context.Configuration["Token"];
+                string? token = context.Configuration["Token"];
+
+                if (string.IsNullOrEmpty(token))
+                    throw new ArgumentException("The token is null or empty", nameof(token));
+
+                config.Token = token;
             })
             .UseInteractionService((context, config) =>
             {
@@ -29,8 +34,7 @@ internal class Program
             })
             .ConfigureServices((context, services) =>
             {
-                services
-                .AddHostedService<InteractionHandler>();
+                services.AddHostedService<InteractionHandler>();
             })
             .Build();
 
