@@ -7,36 +7,42 @@ namespace Gudgeon.Services;
 
 internal sealed partial class InteractionHandler : DiscordClientService
 {
-    private Task InteractionCreated(SocketInteraction interaction)
+    private async Task InteractionCreated(SocketInteraction interaction)
     {
         try
         {
             var context = new SocketInteractionContext(Client, interaction);
-            _ = _service.ExecuteCommandAsync(context, _provider);
+            await _service.ExecuteCommandAsync(context, _provider);
         }
         catch (Exception exception)
         {
             Logger.LogError(exception, "Exception occurred whilst attempting to handle interaction.");
         }
-
-        return Task.CompletedTask;
     }
-    private Task InteractionExecuted(ICommandInfo command, IInteractionContext context, IResult result)
+    private async Task InteractionExecuted(ICommandInfo commandInfo, IInteractionContext context, IResult result)
     {
         if (string.IsNullOrEmpty(result.ErrorReason))
-            return Task.CompletedTask;
+            return;
 
         EmbedStyle style = result.IsSuccess ? new SuccessStyle() : new ErrorStyle();
 
         if (context.Interaction.HasResponded)
-            _ = context.Interaction.ModifyWithStyleAsync(style, result.ErrorReason);
+            await context.Interaction.ModifyWithStyleAsync(style, result.ErrorReason).ConfigureAwait(false);
         else
-            _ = context.Interaction.RespondWithStyleAsync(style, result.ErrorReason);
+            await context.Interaction.RespondWithStyleAsync(style, result.ErrorReason).ConfigureAwait(false);
 
-        TimeSpan? span = result is GudgeonResult gudgeonResult ? gudgeonResult.DeletionDelay : TimeSpan.FromSeconds(8);
+        TimeSpan? span = result is CommandResult gudgeonResult ? gudgeonResult.DeletionDelay : TimeSpan.FromSeconds(8);
         if (span != null)
-            _ = context.Interaction.DelayedDeleteResponseAsync(span.Value);
+            await context.Interaction.DelayedDeleteResponseAsync(span.Value).ConfigureAwait(false);
 
-        return Task.CompletedTask;
+        if (context.User is IGuildUser)
+            RemoveGuildLimits(context.Guild.Id, commandInfo);
+    }
+
+    private void RemoveGuildLimits(ulong guildId, ICommandInfo commandInfo)
+    {
+        string? contextId = commandInfo.Module + "//" + commandInfo.MethodName + "//" + commandInfo.Name;
+        if (DoMassUseCheck.LimitedGuilds.Any(x => x.Key == guildId && x.Value == contextId))
+            DoMassUseCheck.LimitedGuilds.Remove(guildId, out contextId);
     }
 }
