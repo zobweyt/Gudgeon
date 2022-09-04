@@ -1,4 +1,11 @@
-﻿using Discord;
+﻿//Originally made by jalaljaleh for Dynastio.Discord
+//Read the original file at https://github.com/jalaljaleh/Dynastio.Discord/blob/master/Dynastio.Bot/Interactions/Preconditions/RateLimit.cs
+//Originally licensed under Apache 2.0 https://github.com/jalaljaleh/Dynastio.Discord/blob/master/LICENSE.txt
+//
+//Modifications:
+// 
+
+using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using System.Collections.Concurrent;
