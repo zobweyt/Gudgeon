@@ -12,8 +12,12 @@ public partial class ModerationModule : GudgeonModuleBase
         [Summary("user", "The user to ban")] [DoHierarchyCheck] IUser user,
         [Summary("reason", "The ban reason")] [RequireParameterLength(512)] string? reason = null)
     {
+        var ban = await Context.Guild.GetBanAsync(user);
+        if (ban != null)
+            return GudgeonResult.FromError($"{user.Username}#{user.Discriminator} have been already banned.");
+
         await Context.Guild.AddBanAsync(user, reason: reason);
-        return CommandResult.FromSuccess($"{user.Username}#{user.Discriminator} has been banned.");
+        return GudgeonResult.FromSuccess($"{user.Username}#{user.Discriminator} has been banned.");
     }
 
     [RequireBotPermission(GuildPermission.BanMembers)]
@@ -21,8 +25,12 @@ public partial class ModerationModule : GudgeonModuleBase
     public async Task<RuntimeResult> UnbanAsync(
         [Summary("user", "The user to unban")] IUser user)
     {
+        var ban = await Context.Guild.GetBanAsync(user);
+        if (ban == null)
+            return GudgeonResult.FromError($"{user.Username}#{user.Discriminator} have not been banned.");
+
         await Context.Guild.RemoveBanAsync(user);
-        return CommandResult.FromSuccess($"{user.Username}#{user.Discriminator} has been unbanned.", TimeSpan.FromSeconds(8));
+        return GudgeonResult.FromSuccess($"{user.Username}#{user.Discriminator} has been unbanned.");
     }
 
     [RequireBotPermission(GuildPermission.BanMembers)]
@@ -32,25 +40,31 @@ public partial class ModerationModule : GudgeonModuleBase
         [Summary("reason", "The kick reason")] [RequireParameterLength(512)] string? reason = null)
     {
         await user.KickAsync(reason);
-        return CommandResult.FromSuccess($"{user.Username}#{user.Discriminator} has been kicked.");
+        return GudgeonResult.FromSuccess($"{user.Username}#{user.Discriminator} has been kicked.");
     }
 
     [RequireBotPermission(GuildPermission.ModerateMembers)]
-    [SlashCommand("timeout", "Timeout a user")]
-    public async Task<RuntimeResult> TimeoutAsync(
+    [SlashCommand("mute", "Timeout a user")]
+    public async Task<RuntimeResult> MuteAsync(
         [Summary("user", "The user to timeout")] [DoHierarchyCheck] IGuildUser user,
         [Summary("span", "The span of timeout (ex. 12m, 32s)")] TimeSpan span)
     {
+        if (user.TimedOutUntil != null && user.TimedOutUntil.Value >= DateTime.Now + span)
+            return GudgeonResult.FromError($"{user.Username}#{user.Discriminator} has been already timed out until <t:{(user.TimedOutUntil.Value).ToUnixTimeSeconds()}:f>.");
+
         await user.SetTimeOutAsync(span);
-        return CommandResult.FromSuccess($"{user.Username}#{user.Discriminator} has been timed out until <t:{(DateTimeOffset.Now + span).ToUnixTimeSeconds()}:f>.");
+        return GudgeonResult.FromSuccess($"{user.Username}#{user.Discriminator} has been timed out until <t:{(DateTimeOffset.Now + span).ToUnixTimeSeconds()}:f>.");
     }
 
     [RequireBotPermission(GuildPermission.ModerateMembers)]
-    [SlashCommand("remove-timeout", "Remove a user timeout")]
-    public async Task<RuntimeResult> RemoveTimeoutAsync(
+    [SlashCommand("unmute", "Remove a user timeout")]
+    public async Task<RuntimeResult> UnmuteAsync(
         [Summary("user", "The user to remove timeout")] [DoHierarchyCheck] IGuildUser user)
     {
+        if (user.TimedOutUntil == null)
+            return GudgeonResult.FromError($"{user.Username}#{user.Discriminator} have not been timed out.");
+
         await user.RemoveTimeOutAsync();
-        return CommandResult.FromSuccess($"The timeout for {user.Username}#{user.Discriminator} has been removed.", TimeSpan.FromSeconds(8));
+        return GudgeonResult.FromSuccess($"The timeout for {user.Username}#{user.Discriminator} has been removed.");
     }
 }

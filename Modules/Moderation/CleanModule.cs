@@ -10,14 +10,14 @@ public partial class ModerationModule : GudgeonModuleBase
     [RequireBotPermission(ChannelPermission.ManageMessages)]
     [SlashCommand("clean", "Delete multiple channel messages")]
     public async Task<RuntimeResult> CleanAsync(
-        [Summary("amount", $"The number of messages to clean up.")] [RequireParameterLength(2, 500)] int amount)
+        [Summary("amount", $"The number of messages to clean up.")] [RequireParameterLength(2, 100)] int amount)
     {
-        await DeferAsync();
+        await DeferAsync(ephemeral: true);
 
         var messages = await Context.Channel.GetMessagesAsync(amount + 1).FlattenAsync();
-        var youngMessages = messages.Where(x => x.Timestamp > DateTime.Now.AddDays(-14)).Skip(1).ToList();
+        var youngMessages = messages.Skip(1).Where(x => x.Timestamp > DateTime.UtcNow.AddDays(-14));
         await (Context.Channel as ITextChannel).DeleteMessagesAsync(youngMessages);
 
-        return CommandResult.FromSuccess($"{youngMessages.Count} messages have been successfully cleaned.", TimeSpan.FromSeconds(8));
+        return GudgeonResult.FromSuccess($"{youngMessages.Count()} messages have been successfully cleaned.");
     }
 }

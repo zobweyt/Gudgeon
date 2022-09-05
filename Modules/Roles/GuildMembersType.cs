@@ -2,6 +2,7 @@
 
 public enum GuildMembersType
 {
+    Everyone,
     Users,
     Bots
 }

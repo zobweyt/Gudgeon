@@ -14,7 +14,7 @@ public partial class ModerationModule : GudgeonModuleBase
         channel ??= Context.Channel as ITextChannel;
 
         await channel.SyncPermissionsAsync();
-        return CommandResult.FromSuccess("Channel permissions have been synced.", TimeSpan.FromSeconds(8));
+        return GudgeonResult.FromSuccess("Channel permissions have been synced.", true);
     }
 
     [RequireBotPermission(GuildPermission.ManageNicknames)]
@@ -26,6 +26,6 @@ public partial class ModerationModule : GudgeonModuleBase
         nickname ??= user.Username;
 
         await user.ModifyAsync(x => x.Nickname = nickname);
-        return CommandResult.FromSuccess($"Changed nickname for {user.Mention}.", TimeSpan.FromSeconds(8));
+        return GudgeonResult.FromSuccess($"Changed nickname for {user.Mention}.");
     }
 }

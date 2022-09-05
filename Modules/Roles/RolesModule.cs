@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Gudgeon.Common.Styles;
 
 namespace Gudgeon.Modules.Roles;
 
@@ -14,10 +15,10 @@ public class RolesModule : GudgeonModuleBase
         [Summary("role", "The role to give")] [DoHierarchyCheck] IRole role)
     {
         if (user.RoleIds.Any(x => x == role.Id))
-            return CommandResult.FromError($"Cannot add {role.Mention} because {user.Mention} already has it.");
+            return GudgeonResult.FromError($"Cannot add {role.Mention} because {user.Mention} already has it.");
 
         await user.AddRoleAsync(role);
-        return CommandResult.FromSuccess($"Added {role.Mention} to {user.Mention}.", TimeSpan.FromSeconds(8));
+        return GudgeonResult.FromSuccess($"Added {role.Mention} to {user.Mention}.");
     }
 
     [SlashCommand("remove", "Remove a role from user")]
@@ -26,10 +27,10 @@ public class RolesModule : GudgeonModuleBase
         [Summary("role", "The role to remove")] [DoHierarchyCheck] IRole role)
     {
         if (!user.RoleIds.Any(x => x == role.Id))
-            return CommandResult.FromError($"Cannot remove {role.Mention} because {user.Mention} doesn't have it.", TimeSpan.FromSeconds(8));
+            return GudgeonResult.FromError($"Cannot remove {role.Mention} because {user.Mention} doesn't have it.");
         
         await user.RemoveRoleAsync(role);
-        return CommandResult.FromSuccess($"Removed {role.Mention} from {user.Mention}.", TimeSpan.FromSeconds(8));
+        return GudgeonResult.FromSuccess($"Removed {role.Mention} from {user.Mention}.");
     }
 
     [DoMassUseCheck]
@@ -39,30 +40,44 @@ public class RolesModule : GudgeonModuleBase
             [Summary("role", "The role to remove")] [DoHierarchyCheck] IRole role,
             [Summary("type", "The type of members")] GuildMembersType membersType)
     {
-        var members = Context.Guild.Users.ToList().FindAll(x =>
-            x.IsBot == (membersType == GuildMembersType.Bots) &&
-            x.Roles.Contains(role) == (action == RoleAction.Remove));
+        var members = Context.Guild.Users.Where(x => x.Roles.Contains(role) == (action == RoleAction.Remove));
+        if (membersType != GuildMembersType.Everyone)
+            members = members.Where(x => x.IsBot == (membersType == GuildMembersType.Bots));
 
-        if (members.Count == 0)
-            return CommandResult.FromError("No users found with these parameters.", TimeSpan.FromSeconds(8));
+        int membersCount = members.Count();
+        if (membersCount == 0)
+            return GudgeonResult.FromError("No users found with these parameters.");
 
-        DateTimeOffset endTime = DateTimeOffset.UtcNow.AddMilliseconds(members.Count * 1000 + Context.Client.Latency);
-        await RespondWithStyleAsync(new InfoStyle(), $"Changing roles for {members.Count} members will end <t:{endTime.ToUnixTimeSeconds()}:R>");
+        DateTimeOffset endTime = DateTimeOffset.UtcNow.AddMilliseconds(membersCount * 1100 + Context.Client.Latency);
+        var embed = new EmbedBuilder()
+            .WithStyle(new InfoStyle())
+            .WithDescription($"Changing roles for {membersCount} members will end around at <t:{endTime.ToUnixTimeSeconds()}:T>")
+            .Build();
+
+        await Context.Interaction.RespondAsync(embed: embed);
 
         foreach (var member in members)
         {
             if (member == null) continue;
-            await ApplyRoleAsync(member, role);
+            await ApplyRoleAsync(member, role, action == RoleAction.Remove);
         }
 
-        return CommandResult.FromSuccess($"Processed {members.Count} members.", TimeSpan.FromSeconds(12));
+        return GudgeonResult.FromSuccess($"Roles for {membersCount} members have been changed.");
     }
 
-    private async Task ApplyRoleAsync(IGuildUser? member, IRole role)
+    private async Task ApplyRoleAsync(IGuildUser? member, IRole role, bool remove)
     {
-        if (member.RoleIds.Any(x => x == role.Id))
+        bool hasRole = member.RoleIds.Any(x => x == role.Id);
+
+        if (remove && hasRole)
+        {
             await member.RemoveRoleAsync(role);
-        else
+            return;
+        }
+
+        if (!hasRole)
             await member.AddRoleAsync(role);
+
+        await Task.Delay(100);
     }
 }
