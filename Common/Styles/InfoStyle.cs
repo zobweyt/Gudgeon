@@ -1,4 +1,4 @@
-﻿namespace Gudgeon;
+﻿namespace Gudgeon.Common.Styles;
 
 internal class InfoStyle : EmbedStyle
 {

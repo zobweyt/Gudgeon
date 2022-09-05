@@ -1,6 +1,6 @@
 ﻿using Discord;
 
-namespace Gudgeon;
+namespace Gudgeon.Common.Styles;
 
 public abstract class EmbedStyle
 {

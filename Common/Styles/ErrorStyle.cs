@@ -1,4 +1,4 @@
-﻿namespace Gudgeon;
+﻿namespace Gudgeon.Common.Styles;
 
 internal class ErrorStyle : EmbedStyle
 {
@@ -6,6 +6,6 @@ internal class ErrorStyle : EmbedStyle
     {
         Name = name ?? "Error";
         IconUrl = Icons.Error;
-        Color = Colors.Error;
+        Color = Colors.Danger;
     }
 }
