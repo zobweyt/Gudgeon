@@ -9,19 +9,12 @@ namespace Gudgeon.Services;
 
 internal sealed partial class InteractionHandler : DiscordClientService
 {
-    private static List<ulong>? _limitedGuilds = new();
-    public static List<ulong>? LimitedGuilds
-    {
-        get { return _limitedGuilds; }
-        private set { _limitedGuilds = value; }
-    }
-
     private readonly IServiceProvider _provider;
     private readonly InteractionService _service;
     private readonly IHostEnvironment _environment;
     private readonly IConfiguration _configuration;
 
-    public InteractionHandler(DiscordSocketClient client, ILogger<DiscordClientService> logger, IServiceProvider provider, InteractionService service, IHostEnvironment environment, IConfiguration configuration) 
+    public InteractionHandler(DiscordSocketClient client, ILogger<DiscordClientService> logger, IServiceProvider provider, InteractionService service, IHostEnvironment environment, IConfiguration configuration)
         : base(client, logger)
     {
         _provider = provider;
@@ -32,8 +25,8 @@ internal sealed partial class InteractionHandler : DiscordClientService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        Client.InteractionCreated += InteractionCreated;
-        _service.InteractionExecuted += InteractionExecuted;
+        Client.InteractionCreated += InteractionCreatedAsync;
+        _service.InteractionExecuted += InteractionExecutedAsync;
 
         await _service.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
 
@@ -44,19 +37,20 @@ internal sealed partial class InteractionHandler : DiscordClientService
 
     private async Task RegisterCommandsAsync()
     {
-        ulong? devGuild = _configuration.GetValue<ulong>("DevGuild");
+        var devGuildId = _configuration.GetValue<ulong>("DevGuild");
+        var devGuild = Client.GetGuild(devGuildId);
 
-        if (devGuild == null || devGuild == 0)
-            throw new ArgumentException("The devGuild is null or zero", nameof(devGuild));
+        if (devGuild == null || !devGuild.Users.Any(x => x.Id == Client.CurrentUser.Id))
+            throw new ArgumentException("Invalid guild! The guild does not exist or bot missing access to it.", nameof(devGuild));
 
         if (_environment.IsDevelopment())
         {
             await Client.Rest.DeleteAllGlobalCommandsAsync();
-            await _service.RegisterCommandsToGuildAsync(devGuild.Value);
+            await _service.RegisterCommandsToGuildAsync(devGuildId);
             return;
         }
 
-        await Client.Rest.BulkOverwriteGuildCommands(Array.Empty<ApplicationCommandProperties>(), devGuild.Value);
+        await Client.Rest.BulkOverwriteGuildCommands(Array.Empty<ApplicationCommandProperties>(), devGuildId);
         await _service.RegisterCommandsGloballyAsync();
     }
 }
