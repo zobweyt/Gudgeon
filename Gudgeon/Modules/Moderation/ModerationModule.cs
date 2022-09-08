@@ -1,17 +1,22 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Fergun.Interactive;
 
 namespace Gudgeon.Modules.Moderation;
 
-[RequireUserPermission(GuildPermission.Administrator)]
-public partial class ModerationModule : GudgeonModuleBase
+public partial class ModerationModule : ModerationModuleBase
 {
+    public ModerationModule(InteractiveService interactive)
+        : base(interactive)
+    {
+    }
+
     [RequireBotPermission(GuildPermission.Administrator)]
     [SlashCommand("sync", "Sync channel permissions with its category")]
     public async Task<RuntimeResult> SyncAsync(
         [Summary("channel", "The channel to sync")] [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Forum, ChannelType.Voice, ChannelType.Stage)] INestedChannel? channel = null)
     {
-        channel ??= Context.Channel as ITextChannel;
+        channel ??= Context.Channel as INestedChannel;
 
         await channel.SyncPermissionsAsync();
         return GudgeonResult.FromSuccess("Channel permissions have been synced.", true);

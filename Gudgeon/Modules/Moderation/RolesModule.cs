@@ -2,12 +2,11 @@
 using Discord.Interactions;
 using Gudgeon.Common.Styles;
 
-namespace Gudgeon.Modules.Roles;
+namespace Gudgeon.Modules.Moderation;
 
-[RequireUserPermission(GuildPermission.Administrator)]
-[RequireBotPermission(GuildPermission.ManageRoles)]
 [Group("role", "Role commands")]
-public class RolesModule : GudgeonModuleBase
+[RequireBotPermission(GuildPermission.ManageRoles)]
+public partial class ModerationModule : ModerationModuleBase
 {
     [SlashCommand("add", "Add a role to user")]
     public async Task<RuntimeResult> RoleAddAsync(
@@ -33,22 +32,23 @@ public class RolesModule : GudgeonModuleBase
         return GudgeonResult.FromSuccess($"Removed {role.Mention} from {user.Mention}.");
     }
 
-    [DoMassUseCheck]
+    [DisableConcurrentExecution]
     [SlashCommand("multiple", "Multiple roles to guild members", runMode: RunMode.Async)]
     public async Task<RuntimeResult> RoleMultipleAsync(
-            [Summary("action", "The action to apply")] RoleAction action,
+            [Summary("action", "The action to apply")] [Choice("Add", "add"), Choice("Remove", "remove")] string action,
             [Summary("role", "The role to remove")] [DoHierarchyCheck] IRole role,
-            [Summary("type", "The type of members")] GuildMembersType membersType)
+            [Summary("type", "The type of members")] [Choice("Everyone", "everyone"), Choice("Users", "users"), Choice("Bots", "bots")] string membersType)
     {
-        var members = Context.Guild.Users.Where(x => x.Roles.Contains(role) == (action == RoleAction.Remove));
-        if (membersType != GuildMembersType.Everyone)
-            members = members.Where(x => x.IsBot == (membersType == GuildMembersType.Bots));
+        bool remove = action == "remove";
+        var members = Context.Guild.Users.Where(x => x.Roles.Contains(role) == remove);
+        if (membersType != "everyone")
+            members = members.Where(x => x.IsBot == (membersType == "bots"));
 
         int membersCount = members.Count();
         if (membersCount == 0)
             return GudgeonResult.FromError("No users found with these parameters.");
 
-        DateTimeOffset endTime = DateTimeOffset.UtcNow.AddMilliseconds(membersCount * 1100 + Context.Client.Latency);
+        DateTimeOffset endTime = DateTimeOffset.UtcNow.AddSeconds(membersCount * 1100 + Context.Client.Latency);
         var embed = new EmbedBuilder()
             .WithStyle(new InfoStyle())
             .WithDescription($"Changing roles for {membersCount} members will end around at <t:{endTime.ToUnixTimeSeconds()}:T>")
@@ -59,7 +59,7 @@ public class RolesModule : GudgeonModuleBase
         foreach (var member in members)
         {
             if (member == null) continue;
-            await ApplyRoleAsync(member, role, action == RoleAction.Remove);
+            await ApplyRoleAsync(member, role, remove);
         }
 
         return GudgeonResult.FromSuccess($"Roles for {membersCount} members have been changed.");

@@ -1,13 +1,13 @@
 ﻿using Discord;
 
-namespace Gudgeon.Modules.Game2048;
+namespace Gudgeon.Modules.Fun._2048;
 
-internal class Game2048Core
+internal class Game
 {
     public IUser Player { get; init; }
     public int Score { get; private set; }
     public int[,] Board { get; private set; }
-    public Game2048Core(IUser player)
+    public Game(IUser player)
     {
         Player = player;
         Board = new int[4, 4];
@@ -58,13 +58,13 @@ internal class Game2048Core
             }
         }
 
-        if (emptySlots.Count == 0)
-            return false;
-
-        int tile = Random.Next(0, emptySlots.Count);
-        int value = Random.Next(0, 100) < 95 ? 2 : 4;
-        Score += value;
-        Board[emptySlots[tile].Item1, emptySlots[tile].Item2] = value;
+        if (emptySlots.Count != 0)
+        {
+            int tile = Random.Next(0, emptySlots.Count);
+            int value = Random.Next(0, 100) < 95 ? 2 : 4;
+            Score += value;
+            Board[emptySlots[tile].Item1, emptySlots[tile].Item2] = value;
+        }
 
         int score = 0;
         if (!TryMoveBoard((int[,])Board.Clone(), ref score, Direction.Up) &&
@@ -75,7 +75,7 @@ internal class Game2048Core
         return true;
     }
 
-    public void MoveBoard(string key)
+    public bool MoveBoard(string key)
     {
         var direction = key switch
         {
@@ -87,9 +87,12 @@ internal class Game2048Core
         };
 
         int score = 0;
-        if (!TryMoveBoard(Board, ref score, direction))
-            return;
-        Score += score;
+        if (TryMoveBoard(Board, ref score, direction))
+        {
+            Score += score;
+            return true;
+        }
+        return false;
     }
     private bool TryMoveBoard(int[,] board, ref int score, Direction direction)
     {

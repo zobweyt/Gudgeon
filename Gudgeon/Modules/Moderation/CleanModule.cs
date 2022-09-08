@@ -1,16 +1,15 @@
 ﻿using Discord;
 using Discord.Interactions;
 
-namespace Gudgeon.Modules;
+namespace Gudgeon.Modules.Moderation;
 
-[RequireUserPermission(GuildPermission.Administrator)]
-public partial class ModerationModule : GudgeonModuleBase
+public partial class ModerationModule : ModerationModuleBase
 {
     [RateLimit]
     [RequireBotPermission(ChannelPermission.ManageMessages)]
     [SlashCommand("clean", "Delete multiple channel messages")]
     public async Task<RuntimeResult> CleanAsync(
-        [Summary("amount", $"The number of messages to clean up.")] [RequireParameterLength(2, 100)] int amount)
+        [Summary("amount", $"The number of messages to clean up.")] [RequireParameterLengthAttribute(2, 100)] int amount)
     {
         await DeferAsync(ephemeral: true);
 

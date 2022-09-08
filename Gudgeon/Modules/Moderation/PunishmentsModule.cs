@@ -1,10 +1,9 @@
 ﻿using Discord;
 using Discord.Interactions;
 
-namespace Gudgeon.Modules;
+namespace Gudgeon.Modules.Moderation;
 
-[RequireUserPermission(GuildPermission.Administrator)]
-public partial class ModerationModule : GudgeonModuleBase
+public partial class ModerationModule : ModerationModuleBase
 {
     [RequireBotPermission(GuildPermission.BanMembers)]
     [SlashCommand("ban", "Ban a user")]
@@ -33,7 +32,7 @@ public partial class ModerationModule : GudgeonModuleBase
         return GudgeonResult.FromSuccess($"{user.Username}#{user.Discriminator} has been unbanned.");
     }
 
-    [RequireBotPermission(GuildPermission.BanMembers)]
+    [RequireBotPermission(GuildPermission.ModerateMembers)]
     [SlashCommand("kick", "Kick a user")]
     public async Task<RuntimeResult> KickAsync(
         [Summary("user", "The user to kick")] [DoHierarchyCheck] IGuildUser user,

@@ -3,21 +3,16 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Fergun.Interactive;
 
-namespace Gudgeon.Modules.Game2048;
+namespace Gudgeon.Modules.Fun._2048;
 
-[RequireContext(ContextType.Guild)]
-[RequireBotPermission(ChannelPermission.ViewChannel)]
-[RequireBotPermission(ChannelPermission.SendMessages)]
-[RequireBotPermission(GuildPermission.UseExternalEmojis)]
-public class Game2048Module : InteractionModuleBase<SocketInteractionContext>
+public class GameModule : GudgeonModuleBase
 {
-    private readonly InteractiveService _interactive;
-    public Game2048Module(InteractiveService interactive)
+    public GameModule(InteractiveService interactive)
+        : base(interactive)
     {
-        _interactive = interactive;
     }
 
-    [RateLimit(30)]
+    [RequireBotPermission(GuildPermission.UseExternalEmojis)]
     [SlashCommand("2048", "The classic 2048 game", runMode: RunMode.Async)]
     public async Task IntroductionAsync()
     {
@@ -41,13 +36,17 @@ public class Game2048Module : InteractionModuleBase<SocketInteractionContext>
 
     private async Task RunGameAsync()
     {
-        Game2048Core game = new(Context.User);
+        Game game = new(Context.User);
         await UpdateResponseAsync((await WaitForButtonPress()).Value, game.GetDisplayBoard(), MessageComponents);
 
         while (true)
         {
             var result = await WaitForButtonPress();
-            game.MoveBoard(result.Value.Data.CustomId);
+            if (!game.MoveBoard(result.Value.Data.CustomId))
+            {
+                await UpdateResponseAsync(result.Value, game.GetDisplayBoard(), MessageComponents);
+                continue;
+            }
 
             if (game.HasMaxTile())
             {
@@ -82,7 +81,7 @@ public class Game2048Module : InteractionModuleBase<SocketInteractionContext>
             x.Message.Id == response.Id &&
             x.User.Id == Context.Interaction.User.Id,
             timeout: TimeSpan.FromMinutes(5));
-
+        
         if (result.IsTimeout)
         {
             response = await GetOriginalResponseAsync();

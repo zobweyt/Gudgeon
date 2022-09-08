@@ -1,10 +1,16 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Fergun.Interactive;
 
 namespace Gudgeon.Modules;
 
 public class GeneralModule : GudgeonModuleBase
 {
+    public GeneralModule(InteractiveService interactive)
+        : base(interactive)
+    {
+    }
+
     [SlashCommand("ping", "Displays bot's latency")]
     public async Task PingAsync()
     {

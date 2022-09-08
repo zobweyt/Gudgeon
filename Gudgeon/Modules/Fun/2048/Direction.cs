@@ -1,4 +1,4 @@
-﻿namespace Gudgeon.Modules.Game2048;
+﻿namespace Gudgeon.Modules.Fun._2048;
 
 public enum Direction
 {
