@@ -5,6 +5,7 @@ using Fergun.Interactive;
 
 namespace Gudgeon.Modules.Fun._2048;
 
+[RequireBotPermission(GuildPermission.UseExternalEmojis)]
 public class GameModule : GudgeonModuleBase
 {
     public GameModule(InteractiveService interactive)
@@ -12,87 +13,58 @@ public class GameModule : GudgeonModuleBase
     {
     }
 
-    [RequireBotPermission(GuildPermission.UseExternalEmojis)]
+    [RateLimit(30)]
     [SlashCommand("2048", "The classic 2048 game", runMode: RunMode.Async)]
-    public async Task IntroductionAsync()
-    {
-        Embed embed = new EmbedBuilder()
-            .WithTitle("Introduction")
-            .WithDescription(
-            "Click the buttons for the direction you want to shift the board.\n" +
-            "Tiles with the same value will join together.\n" +
-            "Try to reach the 2048 tile!")
-            .WithFooter($"{Context.User.Username}#{Context.User.Discriminator} | Use button below to start!")
-            .WithColor(Colors.Primary)
-            .Build();
-
-        MessageComponent builder = new ComponentBuilder()
-            .WithButton("Start", "2048_start", ButtonStyle.Success)
-            .Build();
-
-        await RespondAsync(embed: embed, components: builder);
-        await RunGameAsync();
-    }
-
-    private async Task RunGameAsync()
+    public async Task RunGameAsync()
     {
         Game game = new(Context.User);
-        await UpdateResponseAsync((await WaitForButtonPress()).Value, game.GetDisplayBoard(), MessageComponents);
+
+        string guide = "\nClick the buttons for the direction you want to shift the board." +
+                         "\nTiles with the same value will join together." +
+                         "\nTry to reach the 2048 tile!";
+        await RespondAsync(game.GetDisplayBoard() + guide, components: MessageComponents);
 
         while (true)
         {
-            var result = await WaitForButtonPress();
-            if (!game.MoveBoard(result.Value.Data.CustomId))
+            var (direction, interaction) = await GetDirection();
+            if (!game.TryMoveBoard(direction))
             {
-                await UpdateResponseAsync(result.Value, game.GetDisplayBoard(), MessageComponents);
+                await DisplayBoard(interaction, game.GetDisplayBoard());
                 continue;
             }
-
-            if (game.HasMaxTile())
+            if (game.HasMaxTile() | !game.TryGenerateTile())
             {
-                game.TryGenerateTile();
-                await UpdateResponseAsync(result.Value, game.GetDisplayBoard() + "\nVictory. You won! :tada:");
+                await DisplayBoard(interaction, game.GetDisplayBoard());
                 break;
             }
-            if (!game.TryGenerateTile())
-            {
-                await UpdateResponseAsync(result.Value, game.GetDisplayBoard() + "\nDefeat. Game over! :skull:");
-                break;
-            }            
-
-            await UpdateResponseAsync(result.Value, game.GetDisplayBoard(), MessageComponents);
+            await DisplayBoard(interaction, game.GetDisplayBoard());
         }
     }
-
-    private async Task UpdateResponseAsync(SocketMessageComponent interaction, string content, MessageComponent? components = null)
+    private async Task DisplayBoard(SocketMessageComponent component, string board)
     {
-        await interaction.UpdateAsync(x =>
+        await component.UpdateAsync(x =>
         {
-            x.Embed = null;
-            x.Content = content;
-            x.Components = components;
+            x.Content = board;
+            x.Components = MessageComponents;
         });
     }
-    private async Task<InteractiveResult<SocketMessageComponent?>?> WaitForButtonPress()
+    private async Task<(Direction, SocketMessageComponent?)> GetDirection()
     {
         IUserMessage? response = await GetOriginalResponseAsync();
 
         var result = await _interactive.NextMessageComponentAsync(x =>
             x.Message.Id == response.Id &&
             x.User.Id == Context.Interaction.User.Id,
-            timeout: TimeSpan.FromMinutes(5));
-        
-        if (result.IsTimeout)
+            timeout: TimeSpan.FromMinutes(3));
+                
+        return (result.Value.Data.CustomId switch
         {
-            response = await GetOriginalResponseAsync();
-
-            if (response != null)
-            {
-                await response.DeleteAsync();
-            }
-        }
-
-        return result;
+            "2048_move_board_up" => Direction.Up,
+            "2048_move_board_down" => Direction.Down,
+            "2048_move_board_left" => Direction.Left,
+            "2048_move_board_right" => Direction.Right,
+            _ => throw new NotImplementedException()
+        }, result.Value);
     }
     private MessageComponent MessageComponents
     {

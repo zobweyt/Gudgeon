@@ -75,18 +75,10 @@ internal class Game
         return true;
     }
 
-    public bool MoveBoard(string key)
+    public bool TryMoveBoard(Direction direction)
     {
-        var direction = key switch
-        {
-            "2048_move_board_up" => Direction.Up,
-            "2048_move_board_down" => Direction.Down,
-            "2048_move_board_left" => Direction.Left,
-            "2048_move_board_right" => Direction.Right,
-            _ => throw new NotImplementedException()
-        };
-
         int score = 0;
+
         if (TryMoveBoard(Board, ref score, direction))
         {
             Score += score;
