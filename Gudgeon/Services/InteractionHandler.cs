@@ -1,10 +1,12 @@
-﻿using System.Reflection;
+﻿using System.ComponentModel.Design;
+using System.Reflection;
 using Discord;
 using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Gudgeon.Common.Styles;
+using Microsoft.VisualBasic;
 using static Gudgeon.RateLimitAttribute;
 
 namespace Gudgeon.Services;
@@ -66,33 +68,23 @@ internal sealed class InteractionHandler : DiscordClientService
     }
     private async Task InteractionExecutedAsync(ICommandInfo commandInfo, IInteractionContext context, IResult result)
     {
-        if (!result.IsSuccess && result.Error == InteractionCommandError.UnknownCommand || result.Error == InteractionCommandError.Exception)
-            return;
-
-        if (!string.IsNullOrEmpty(result.ErrorReason))
-            await HandleInterationAsync(context.Interaction, result);
-        
-        var contextId = commandInfo.Module.Name + "//" + commandInfo.MethodName + "//" + commandInfo.Name;
-        ulong id = context.Guild?.Id ?? context.User.Id;
-        if (DisableConcurrentExecutionAttribute.Items.Any(x => x.Key == id && x.Value == contextId))
-            DisableConcurrentExecutionAttribute.Items.Remove(id, out contextId);
-    }
-
-    private async Task HandleInterationAsync(IDiscordInteraction interaction, IResult result)
-    {
-        EmbedStyle style = result.IsSuccess ? new SuccessStyle() : new ErrorStyle();
-        var embed = new EmbedBuilder()
-            .WithStyle(style)
-            .WithDescription(result.ErrorReason)
-            .Build();
-
-        bool ephemeral = result is not GudgeonResult gudgeonResult || gudgeonResult.IsEphemeral;
-
-        if (interaction.HasResponded)
+        if (string.IsNullOrEmpty(result.ErrorReason) || result?.Error == InteractionCommandError.UnknownCommand)
         {
-            await interaction.FollowupAsync(embed: embed, ephemeral: ephemeral);
             return;
         }
-        await interaction.RespondAsync(embed: embed, ephemeral: ephemeral);
+
+        var embed = new EmbedBuilder()
+            .WithStyle(result.IsSuccess ? new SuccessStyle() : new ErrorStyle())
+            .WithDescription(result.ErrorReason)
+            .Build();
+        bool ephemeral = result is not GudgeonResult gudgeonResult || gudgeonResult.IsEphemeral;
+
+        if (context.Interaction.HasResponded)
+        {
+            await context.Interaction.FollowupAsync(embed: embed, ephemeral: ephemeral);
+            return;
+        }
+
+        await context.Interaction.RespondAsync(embed: embed, ephemeral: ephemeral);
     }
 }

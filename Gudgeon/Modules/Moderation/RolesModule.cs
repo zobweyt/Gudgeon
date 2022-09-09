@@ -32,7 +32,7 @@ public partial class ModerationModule : ModerationModuleBase
         return GudgeonResult.FromSuccess($"Removed {role.Mention} from {user.Mention}.");
     }
 
-    [DisableConcurrentExecution]
+    [RateLimit(15)]
     [SlashCommand("multiple", "Multiple roles to guild members", runMode: RunMode.Async)]
     public async Task<RuntimeResult> RoleMultipleAsync(
             [Summary("action", "The action to apply")] [Choice("Add", "add"), Choice("Remove", "remove")] string action,
@@ -65,17 +65,13 @@ public partial class ModerationModule : ModerationModuleBase
         return GudgeonResult.FromSuccess($"Roles for {membersCount} members have been changed.");
     }
 
-    private async Task ApplyRoleAsync(IGuildUser? member, IRole role, bool remove)
+    private async Task ApplyRoleAsync(IGuildUser member, IRole role, bool remove)
     {
         bool hasRole = member.RoleIds.Any(x => x == role.Id);
 
         if (remove && hasRole)
-        {
             await member.RemoveRoleAsync(role);
-            return;
-        }
-
-        if (!hasRole)
+        else if (!remove && !hasRole)
             await member.AddRoleAsync(role);
 
         await Task.Delay(100);
