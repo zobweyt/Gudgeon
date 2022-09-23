@@ -5,24 +5,23 @@ using Fergun.Interactive;
 
 namespace Gudgeon.Modules.Fun._2048;
 
-[RequireBotPermission(GuildPermission.UseExternalEmojis)]
-public class GameModule : GudgeonModuleBase
+public class Game2048Module : GameModuleBase
 {
-    public GameModule(InteractiveService interactive)
+    public Game2048Module(InteractiveService interactive)
         : base(interactive)
     {
     }
 
-    [RateLimit(30)]
+    [RateLimit(seconds: 32, requests: 1)]
     [SlashCommand("2048", "The classic 2048 game", runMode: RunMode.Async)]
     public async Task RunGameAsync()
     {
-        Game game = new(Context.User);
+        Game2048 game = new(Context.User);
 
         string guide = "\nClick the buttons for the direction you want to shift the board." +
                          "\nTiles with the same value will join together." +
                          "\nTry to reach the 2048 tile!";
-        await RespondAsync(game.GetDisplayBoard() + guide, components: MessageComponents);
+        await RespondAsync(game.GetDisplayBoard() + guide, components: BoardShiftingButtons);
 
         while (true)
         {
@@ -45,7 +44,7 @@ public class GameModule : GudgeonModuleBase
         await component.UpdateAsync(x =>
         {
             x.Content = board;
-            x.Components = MessageComponents;
+            x.Components = BoardShiftingButtons;
         });
     }
     private async Task<(Direction, SocketMessageComponent?)> GetDirection()
@@ -66,7 +65,7 @@ public class GameModule : GudgeonModuleBase
             _ => throw new NotImplementedException()
         }, result.Value);
     }
-    private MessageComponent MessageComponents
+    private MessageComponent BoardShiftingButtons
     {
         get
         {

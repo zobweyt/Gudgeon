@@ -2,12 +2,12 @@
 
 namespace Gudgeon.Modules.Fun._2048;
 
-internal class Game
+internal class Game2048
 {
     public IUser Player { get; init; }
     public int Score { get; private set; }
     public int[,] Board { get; private set; }
-    public Game(IUser player)
+    public Game2048(IUser player)
     {
         Player = player;
         Board = new int[4, 4];
