@@ -1,17 +1,24 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Fergun.Interactive;
 using Gudgeon.Common.Styles;
 
 namespace Gudgeon.Modules.Moderation;
 
 [Group("role", "Role commands")]
+[RequireUserPermission(GuildPermission.ManageRoles)]
 [RequireBotPermission(GuildPermission.ManageRoles)]
-public partial class ModerationModule : ModerationModuleBase
+public class RolesModule : GudgeonModuleBase
 {
+    public RolesModule(InteractiveService interactive)
+        : base(interactive)
+    {
+    }
+
     [SlashCommand("add", "Add a role to user")]
     public async Task<RuntimeResult> RoleAddAsync(
         [Summary("user", "The user to give role")] IGuildUser user,
-        [Summary("role", "The role to give")] [DoHierarchyCheck] IRole role)
+        [Summary("role", "The role to give")][DoHierarchyCheck] IRole role)
     {
         if (user.RoleIds.Any(x => x == role.Id))
             return GudgeonResult.FromError($"Cannot add {role.Mention} because {user.Mention} already has it.");
@@ -23,7 +30,7 @@ public partial class ModerationModule : ModerationModuleBase
     [SlashCommand("remove", "Remove a role from user")]
     public async Task<RuntimeResult> RoleRemoveAsync(
         [Summary("user", "The user to remove role")] IGuildUser user,
-        [Summary("role", "The role to remove")] [DoHierarchyCheck] IRole role)
+        [Summary("role", "The role to remove")][DoHierarchyCheck] IRole role)
     {
         if (!user.RoleIds.Any(x => x == role.Id))
             return GudgeonResult.FromError($"Cannot remove {role.Mention} because {user.Mention} doesn't have it.");
@@ -32,12 +39,13 @@ public partial class ModerationModule : ModerationModuleBase
         return GudgeonResult.FromSuccess($"Removed {role.Mention} from {user.Mention}.");
     }
 
-    [RateLimit(15)]
+    [RateLimit(seconds: 15, requests: 1)]
+    [RequireUserPermission(GuildPermission.Administrator)]
     [SlashCommand("multiple", "Multiple roles to guild members", runMode: RunMode.Async)]
     public async Task<RuntimeResult> RoleMultipleAsync(
-            [Summary("action", "The action to apply")] [Choice("Add", "add"), Choice("Remove", "remove")] string action,
-            [Summary("role", "The role to remove")] [DoHierarchyCheck] IRole role,
-            [Summary("type", "The type of members")] [Choice("Everyone", "everyone"), Choice("Users", "users"), Choice("Bots", "bots")] string membersType)
+            [Summary("action", "The action to apply")][Choice("Add", "add"), Choice("Remove", "remove")] string action,
+            [Summary("role", "The role to remove")][DoHierarchyCheck] IRole role,
+            [Summary("type", "The type of members")][Choice("Everyone", "everyone"), Choice("Users", "users"), Choice("Bots", "bots")] string membersType)
     {
         bool remove = action == "remove";
         var members = Context.Guild.Users.Where(x => x.Roles.Contains(role) == remove);
@@ -48,7 +56,7 @@ public partial class ModerationModule : ModerationModuleBase
         if (membersCount == 0)
             return GudgeonResult.FromError("No users found with these parameters.");
 
-        DateTimeOffset endTime = DateTimeOffset.UtcNow.AddSeconds(membersCount * 1100 + Context.Client.Latency);
+        DateTimeOffset endTime = DateTimeOffset.UtcNow.AddSeconds(membersCount * 1000 + Context.Client.Latency);
         var embed = new EmbedBuilder()
             .WithStyle(new InfoStyle())
             .WithDescription($"Changing roles for {membersCount} members will end around at <t:{endTime.ToUnixTimeSeconds()}:T>")
@@ -70,10 +78,12 @@ public partial class ModerationModule : ModerationModuleBase
         bool hasRole = member.RoleIds.Any(x => x == role.Id);
 
         if (remove && hasRole)
+        {
             await member.RemoveRoleAsync(role);
-        else if (!remove && !hasRole)
-            await member.AddRoleAsync(role);
+            return;
+        }
 
-        await Task.Delay(100);
+        if (!remove && !hasRole)
+            await member.AddRoleAsync(role);
     }
 }
