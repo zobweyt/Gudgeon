@@ -1,9 +1,11 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using Fergun.Interactive;
 using Gudgeon.Common.Styles;
+using static Gudgeon.Modules.Moderation.Roles.MembersType;
 
-namespace Gudgeon.Modules.Moderation;
+namespace Gudgeon.Modules.Moderation.Roles;
 
 [Group("role", "Role commands")]
 [RequireUserPermission(GuildPermission.ManageRoles)]
@@ -34,56 +36,43 @@ public class RolesModule : GudgeonModuleBase
     {
         if (!user.RoleIds.Any(x => x == role.Id))
             return GudgeonResult.FromError($"Cannot remove {role.Mention} because {user.Mention} doesn't have it.");
-        
+
         await user.RemoveRoleAsync(role);
         return GudgeonResult.FromSuccess($"Removed {role.Mention} from {user.Mention}.");
     }
 
-    [RateLimit(seconds: 15, requests: 1)]
+    [RateLimit(seconds: 16, requests: 1)]
     [RequireUserPermission(GuildPermission.Administrator)]
     [SlashCommand("multiple", "Multiple roles to guild members", runMode: RunMode.Async)]
     public async Task<RuntimeResult> RoleMultipleAsync(
-            [Summary("action", "The action to apply")][Choice("Add", "add"), Choice("Remove", "remove")] string action,
+            [Summary("action", "The action to apply roles")][Choice("Add", "add"), Choice("Remove", "remove")] string action,
             [Summary("role", "The role to remove")][DoHierarchyCheck] IRole role,
-            [Summary("type", "The type of members")][Choice("Everyone", "everyone"), Choice("Users", "users"), Choice("Bots", "bots")] string membersType)
+            [Summary("type", "The type of members")] MembersType membersType)
     {
         bool remove = action == "remove";
-        var members = Context.Guild.Users.Where(x => x.Roles.Contains(role) == remove);
-        if (membersType != "everyone")
-            members = members.Where(x => x.IsBot == (membersType == "bots"));
-
-        int membersCount = members.Count();
-        if (membersCount == 0)
+        var members = Context.Guild.Users.Where(member => member.Roles.Contains(role) == remove);
+        members = membersType == Everyone ? members : members.Where(member => member.IsBot == (membersType == Bots));
+        
+        if (!members.Any())
             return GudgeonResult.FromError("No users found with these parameters.");
 
-        DateTimeOffset endTime = DateTimeOffset.UtcNow.AddSeconds(membersCount * 1000 + Context.Client.Latency);
         var embed = new EmbedBuilder()
             .WithStyle(new InfoStyle())
-            .WithDescription($"Changing roles for {membersCount} members will end around at <t:{endTime.ToUnixTimeSeconds()}:T>")
+            .WithDescription($"Operation will end at <t:{(DateTimeOffset.UtcNow.AddSeconds(members.Count() * 1000 + Context.Client.Latency)).ToUnixTimeSeconds()}:T>")
             .Build();
 
-        await Context.Interaction.RespondAsync(embed: embed);
+        await RespondAsync(embed: embed);
 
         foreach (var member in members)
         {
-            if (member == null) continue;
-            await ApplyRoleAsync(member, role, remove);
-        }
-
-        return GudgeonResult.FromSuccess($"Roles for {membersCount} members have been changed.");
-    }
-
-    private async Task ApplyRoleAsync(IGuildUser member, IRole role, bool remove)
-    {
-        bool hasRole = member.RoleIds.Any(x => x == role.Id);
-
-        if (remove && hasRole)
-        {
-            await member.RemoveRoleAsync(role);
-            return;
-        }
-
-        if (!remove && !hasRole)
+            if (remove)
+            {
+                await member.RemoveRoleAsync(role);
+                continue;
+            }
             await member.AddRoleAsync(role);
+        }
+
+        return GudgeonResult.FromSuccess("Roles have been changed.");
     }
 }

@@ -2,7 +2,7 @@
 using Discord.Interactions;
 using Fergun.Interactive;
 
-namespace Gudgeon.Modules;
+namespace Gudgeon;
 
 [RequireContext(ContextType.Guild)]
 [RequireBotPermission(ChannelPermission.ViewChannel)]

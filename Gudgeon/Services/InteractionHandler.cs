@@ -69,9 +69,7 @@ internal sealed class InteractionHandler : DiscordClientService
     private async Task InteractionExecutedAsync(ICommandInfo commandInfo, IInteractionContext context, IResult result)
     {
         if (string.IsNullOrEmpty(result.ErrorReason) || result?.Error == InteractionCommandError.UnknownCommand)
-        {
             return;
-        }
 
         var embed = new EmbedBuilder()
             .WithStyle(result.IsSuccess ? new SuccessStyle() : new ErrorStyle())

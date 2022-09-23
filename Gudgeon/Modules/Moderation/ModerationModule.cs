@@ -56,8 +56,7 @@ public class ModerationModule : GudgeonModuleBase
         [Summary("user", "The user to ban")][DoHierarchyCheck] IUser user,
         [Summary("reason", "The ban reason")][MaxLength(512)] string? reason = null)
     {
-        var ban = await Context.Guild.GetBanAsync(user);
-        if (ban != null)
+        if ((await Context.Guild.GetBanAsync(user)) != null)
             return GudgeonResult.FromError($"{user.Username}#{user.Discriminator} have been already banned.");
 
         await Context.Guild.AddBanAsync(user, reason: reason);
@@ -69,8 +68,7 @@ public class ModerationModule : GudgeonModuleBase
     public async Task<RuntimeResult> UnbanAsync(
         [Summary("user", "The user to unban")] IUser user)
     {
-        var ban = await Context.Guild.GetBanAsync(user);
-        if (ban == null)
+        if ((await Context.Guild.GetBanAsync(user)) == null)
             return GudgeonResult.FromError($"{user.Username}#{user.Discriminator} have not been banned.");
 
         await Context.Guild.RemoveBanAsync(user);
