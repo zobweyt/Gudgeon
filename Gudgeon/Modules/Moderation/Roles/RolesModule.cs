@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Discord.WebSocket;
 using Fergun.Interactive;
 using Gudgeon.Common.Styles;
 using static Gudgeon.Modules.Moderation.Roles.MembersType;
@@ -56,9 +55,11 @@ public class RolesModule : GudgeonModuleBase
         if (!members.Any())
             return GudgeonResult.FromError("No users found with these parameters.");
 
+        DateTimeOffset endAt = DateTimeOffset.UtcNow.AddMilliseconds(members.Count() * 1000 + Context.Client.Latency);
+
         var embed = new EmbedBuilder()
             .WithStyle(new InfoStyle())
-            .WithDescription($"Operation will end at <t:{(DateTimeOffset.UtcNow.AddSeconds(members.Count() * 1000 + Context.Client.Latency)).ToUnixTimeSeconds()}:T>")
+            .WithDescription($"Operation will end at <t:{endAt.ToUnixTimeSeconds()}:T>")
             .Build();
 
         await RespondAsync(embed: embed);
