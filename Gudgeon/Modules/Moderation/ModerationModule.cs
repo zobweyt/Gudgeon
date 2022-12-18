@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Fergun.Interactive;
+using Gudgeon.Common.Styles;
 
 namespace Gudgeon.Modules.Moderation;
 
@@ -54,13 +55,36 @@ public class ModerationModule : GudgeonModuleBase
     [SlashCommand("ban", "Ban a user")]
     public async Task<RuntimeResult> BanAsync(
         [Summary("user", "The user to ban")][DoHierarchyCheck] IUser user,
-        [Summary("reason", "The ban reason")][MaxLength(512)] string? reason = null)
+        [Summary("reason", "The ban reason")][MaxLength(512)] string? reason = null,
+        [Summary("issue", "Create a button with url to provide additional info")] string? issueUrl = null)
     {
         if ((await Context.Guild.GetBanAsync(user)) != null)
             return GudgeonResult.FromError($"{user.Username}#{user.Discriminator} have been already banned.");
 
+        var embed = new EmbedBuilder()
+            .WithStyle(new SuccessStyle(), $"{user.Username}#{user.Discriminator} has been banned permanently")
+            .WithDescription(reason != null ? $"**Reason:** {reason}." : null)
+            .Build();
+
+        MessageComponent? components = null;
+
+        try
+        {
+            if (issueUrl != null)
+            {
+                components = new ComponentBuilder()
+                    .WithButton("Issue", style: ButtonStyle.Link, url: issueUrl)
+                    .Build();
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            return GudgeonResult.FromError("Issue url must include a protocol (either HTTP, HTTPS, or DISCORD).");
+        }
+
         await Context.Guild.AddBanAsync(user, reason: reason);
-        return GudgeonResult.FromSuccess($"{user.Username}#{user.Discriminator} has been banned.");
+        await RespondAsync(embed: embed, components: components);
+        return GudgeonResult.FromSuccess();
     }
 
     [RequireBotPermission(GuildPermission.BanMembers)]
