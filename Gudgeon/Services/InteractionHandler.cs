@@ -49,8 +49,10 @@ internal sealed class InteractionHandler : DiscordClientService
             await _service.RegisterCommandsToGuildAsync(devGuildId);
             return;
         }
+        
+        if (devGuildId != 0)
+            await Client.Rest.BulkOverwriteGuildCommands(Array.Empty<ApplicationCommandProperties>(), devGuildId);
 
-        await Client.Rest.BulkOverwriteGuildCommands(Array.Empty<ApplicationCommandProperties>(), devGuildId);
         await _service.RegisterCommandsGloballyAsync();
     }
 
