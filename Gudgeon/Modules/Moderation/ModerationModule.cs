@@ -51,6 +51,7 @@ public class ModerationModule : GudgeonModuleBase
         return GudgeonResult.FromSuccess($"Changed nickname for {user.Mention}.");
     }
 
+    [RateLimit(seconds: 4, requests: 1)]
     [RequireBotPermission(GuildPermission.BanMembers)]
     [SlashCommand("ban", "Ban a user")]
     public async Task<RuntimeResult> BanAsync(
