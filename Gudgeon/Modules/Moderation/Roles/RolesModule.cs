@@ -22,7 +22,7 @@ public class RolesModule : GudgeonModuleBase
         [Summary("role", "The role to give")][DoHierarchyCheck] IRole role)
     {
         if (user.RoleIds.Any(x => x == role.Id))
-            return GudgeonResult.FromError($"Cannot add {role.Mention} because {user.Mention} already has it.");
+            return GudgeonResult.FromError($"Cannot add {role.Mention} because {user.Mention} already have it.");
 
         await user.AddRoleAsync(role);
         return GudgeonResult.FromSuccess($"Added {role.Mention} to {user.Mention}.");

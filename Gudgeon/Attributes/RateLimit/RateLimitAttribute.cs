@@ -8,8 +8,7 @@ namespace Gudgeon;
 public sealed class RateLimitAttribute : PreconditionAttribute
 {
     public record RateLimitItem(string? ContextId, DateTime ExpireAt);
-    private static readonly ConcurrentDictionary<ulong, List<RateLimitItem>> Items = new();
-
+    private static readonly ConcurrentDictionary<ulong, List<RateLimitItem>> LimitedCommands = new();
     private readonly RateLimitType _context;
     private readonly RateLimitBaseType _baseType;
     private readonly int _requests;
@@ -40,7 +39,7 @@ public sealed class RateLimitAttribute : PreconditionAttribute
 
         DateTime now = DateTime.UtcNow;
         DateTime expireAt = now.AddSeconds(_seconds);
-        var rateLimits = Items.GetOrAdd(id, new List<RateLimitItem>());
+        var rateLimits = LimitedCommands.GetOrAdd(id, new List<RateLimitItem>());
         var baseRateLimits = rateLimits.FindAll(x => x.ContextId == contextId);
 
         foreach (var rateLimit in baseRateLimits)
