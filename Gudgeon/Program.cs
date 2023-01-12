@@ -14,8 +14,13 @@ var host = Host.CreateDefaultBuilder()
             GatewayIntents = GatewayIntents.All,
             MessageCacheSize = 200
         };
+
+        string? token = context.Configuration["Token"];
+
+        if (string.IsNullOrEmpty(token))
+            throw new ArgumentNullException(nameof(token), "The token has not been specified.");
     
-        config.Token = context.Configuration["Token"];
+        config.Token = token;
     })
     .UseInteractionService((context, config) =>
     {

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.Design;
+using System.ComponentModel.Design;
 using System.Reflection;
 using Discord;
 using Discord.Addons.Hosting;
@@ -52,6 +52,8 @@ internal sealed class InteractionHandler : DiscordClientService
         
         if (devGuildId != 0)
             await Client.Rest.BulkOverwriteGuildCommands(Array.Empty<ApplicationCommandProperties>(), devGuildId);
+        else
+            Logger.LogWarning("Application commands for development guild could be duplicated due not to DevGuild specified.");
 
         await _service.RegisterCommandsGloballyAsync();
     }
