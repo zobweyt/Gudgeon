@@ -1,4 +1,4 @@
-using Discord;
+﻿using Discord;
 using Discord.Interactions;
 
 namespace Gudgeon;
@@ -21,7 +21,7 @@ public sealed class DoHierarchyCheckAttribute : ParameterPreconditionAttribute
         if (targetHieararchy >= user.Hierarchy)
             return PreconditionResult.FromError("You cannot target anyone else whose roles are higher than yours.");
 
-        var bot = await context.Guild.GetCurrentUserAsync().ConfigureAwait(false);
+        IGuildUser bot = await context.Guild.GetCurrentUserAsync().ConfigureAwait(false);
         if (targetHieararchy >= bot.Hierarchy)
             return PreconditionResult.FromError("The bot's role is lower than the targeted entity.");
 

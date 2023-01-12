@@ -13,6 +13,7 @@ public sealed class RateLimitAttribute : PreconditionAttribute
     private readonly RateLimitBaseType _baseType;
     private readonly int _requests;
     private readonly int _seconds;
+    
     public RateLimitAttribute(int seconds = 4, int requests = 1, RateLimitType context = RateLimitType.User, RateLimitBaseType baseType = RateLimitBaseType.BaseOnCommandInfo)
     {
         _context = context;

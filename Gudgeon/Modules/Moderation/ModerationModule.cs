@@ -1,4 +1,4 @@
-using Discord;
+﻿using Discord;
 using Discord.Interactions;
 using Fergun.Interactive;
 using Gudgeon.Common.Styles;
@@ -60,10 +60,10 @@ public class ModerationModule : GudgeonModuleBase
         [Summary("issue", "Create a button with url to provide additional info")] string? issueUrl = null)
     {
         if ((await Context.Guild.GetBanAsync(user)) != null)
-            return GudgeonResult.FromError($"{user.Username}#{user.Discriminator} have been already banned.");
+            return GudgeonResult.FromError($"{user} have been already banned.");
 
         var embed = new EmbedBuilder()
-            .WithStyle(new SuccessStyle(), $"{user.Username}#{user.Discriminator} has been banned permanently")
+            .WithStyle(new SuccessStyle(), $"{user} has been banned permanently")
             .WithDescription(reason != null ? $"**Reason:** {reason}." : null)
             .Build();
 
@@ -78,9 +78,9 @@ public class ModerationModule : GudgeonModuleBase
                     .Build();
             }
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException exception)
         {
-            return GudgeonResult.FromError("Issue url must include a protocol (either HTTP, HTTPS, or DISCORD).");
+            return GudgeonResult.FromError(exception.Message);
         }
 
         await Context.Guild.AddBanAsync(user, reason: reason);
@@ -94,10 +94,10 @@ public class ModerationModule : GudgeonModuleBase
         [Summary("user", "The user to unban")] IUser user)
     {
         if ((await Context.Guild.GetBanAsync(user)) == null)
-            return GudgeonResult.FromError($"{user.Username}#{user.Discriminator} have not been banned.");
+            return GudgeonResult.FromError($"{user.Mention} have not been banned.");
 
         await Context.Guild.RemoveBanAsync(user);
-        return GudgeonResult.FromSuccess($"{user.Username}#{user.Discriminator} has been unbanned.");
+        return GudgeonResult.FromSuccess($"{user} has been unbanned.");
     }
 
     [RequireBotPermission(GuildPermission.ModerateMembers)]
@@ -107,7 +107,7 @@ public class ModerationModule : GudgeonModuleBase
         [Summary("reason", "The kick reason")][MaxLength(512)] string? reason = null)
     {
         await user.KickAsync(reason);
-        return GudgeonResult.FromSuccess($"{user.Username}#{user.Discriminator} has been kicked.");
+        return GudgeonResult.FromSuccess($"{user} has been kicked.");
     }
 
     [RequireBotPermission(GuildPermission.ModerateMembers)]
@@ -117,10 +117,10 @@ public class ModerationModule : GudgeonModuleBase
         [Summary("span", "The span of timeout (ex. 12m, 32s)")] TimeSpan span)
     {
         if (user.TimedOutUntil != null && user.TimedOutUntil.Value >= DateTime.Now + span)
-            return GudgeonResult.FromError($"{user.Username}#{user.Discriminator} has been already timed out until <t:{(user.TimedOutUntil.Value).ToUnixTimeSeconds()}:f>.");
+            return GudgeonResult.FromError($"{user.Mention} has been already timed out until <t:{(user.TimedOutUntil.Value).ToUnixTimeSeconds()}:f>.");
 
         await user.SetTimeOutAsync(span);
-        return GudgeonResult.FromSuccess($"{user.Username}#{user.Discriminator} has been timed out until <t:{(DateTimeOffset.Now + span).ToUnixTimeSeconds()}:f>.");
+        return GudgeonResult.FromSuccess($"{user.Mention} has been timed out until <t:{(DateTimeOffset.Now + span).ToUnixTimeSeconds()}:f>.");
     }
 
     [RequireBotPermission(GuildPermission.ModerateMembers)]
@@ -129,9 +129,9 @@ public class ModerationModule : GudgeonModuleBase
         [Summary("user", "The user to remove timeout")][DoHierarchyCheck] IGuildUser user)
     {
         if (user.TimedOutUntil == null)
-            return GudgeonResult.FromError($"{user.Username}#{user.Discriminator} have not been timed out.");
+            return GudgeonResult.FromError($"{user.Mention} have not been timed out.");
 
         await user.RemoveTimeOutAsync();
-        return GudgeonResult.FromSuccess($"The timeout for {user.Username}#{user.Discriminator} has been removed.");
+        return GudgeonResult.FromSuccess($"The timeout for {user.Mention} has been removed.");
     }
 }

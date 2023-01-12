@@ -1,8 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Fergun.Interactive;
-using Gudgeon.Common.Styles;
-using static Gudgeon.Modules.Moderation.Roles.MembersType;
 
 namespace Gudgeon.Modules.Moderation.Roles;
 
@@ -40,38 +38,31 @@ public class RolesModule : GudgeonModuleBase
         return GudgeonResult.FromSuccess($"Removed {role.Mention} from {user.Mention}.");
     }
 
-    [RateLimit(seconds: 16, requests: 1)]
+    [RateLimit(seconds: 12, requests: 1)]
     [RequireUserPermission(GuildPermission.Administrator)]
-    [SlashCommand("multiple", "Multiple roles to guild members", runMode: RunMode.Async)]
+    [SlashCommand("bulk", "Modify role of multiple guild members")]
     public async Task<RuntimeResult> RoleMultipleAsync(
-            [Summary("action", "The action to apply roles")][Choice("Add", "add"), Choice("Remove", "remove")] string action,
-            [Summary("role", "The role to remove")][DoHierarchyCheck] IRole role,
-            [Summary("type", "The type of members")] MembersType membersType)
+        [Summary("action", "Desired action with role")] BulkAction action,
+        [Summary("role", "The role to apply")][DoHierarchyCheck] IRole role,
+        [Summary("members", "Guild members to modify")] MembersType target = MembersType.Everyone)
     {
-        bool remove = action == "remove";
+        bool remove = action == BulkAction.Remove;
         var members = Context.Guild.Users.Where(member => member.Roles.Contains(role) == remove);
-        members = membersType == Everyone ? members : members.Where(member => member.IsBot == (membersType == Bots));
-        
+
+        if (target != MembersType.Everyone)
+            members = members.Where(member => member.IsBot == (target == MembersType.Bots));        
+
         if (!members.Any())
             return GudgeonResult.FromError("No users found with these parameters.");
-
-        DateTimeOffset endAt = DateTimeOffset.UtcNow.AddMilliseconds(members.Count() * 1000 + Context.Client.Latency);
-
-        var embed = new EmbedBuilder()
-            .WithStyle(new InfoStyle())
-            .WithDescription($"Operation will end at <t:{endAt.ToUnixTimeSeconds()}:T>")
-            .Build();
-
-        await RespondAsync(embed: embed);
+        
+        await DeferAsync();
 
         foreach (var member in members)
         {
             if (remove)
-            {
                 await member.RemoveRoleAsync(role);
-                continue;
-            }
-            await member.AddRoleAsync(role);
+            else
+                await member.AddRoleAsync(role);
         }
 
         return GudgeonResult.FromSuccess("Roles have been changed.");

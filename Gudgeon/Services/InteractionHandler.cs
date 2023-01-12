@@ -1,13 +1,10 @@
-using System.ComponentModel.Design;
-using System.Reflection;
+﻿using System.Reflection;
 using Discord;
 using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Gudgeon.Common.Styles;
-using Microsoft.VisualBasic;
-using static Gudgeon.RateLimitAttribute;
 
 namespace Gudgeon.Services;
 
@@ -70,6 +67,7 @@ internal sealed class InteractionHandler : DiscordClientService
             Logger.LogError(exception, "Exception occurred whilst attempting to handle interaction.");
         }
     }
+    
     private async Task InteractionExecutedAsync(ICommandInfo commandInfo, IInteractionContext context, IResult result)
     {
         if (string.IsNullOrEmpty(result.ErrorReason) || result?.Error == InteractionCommandError.UnknownCommand)
@@ -79,7 +77,6 @@ internal sealed class InteractionHandler : DiscordClientService
             .WithStyle(result.IsSuccess ? new SuccessStyle() : new ErrorStyle())
             .WithDescription(result.ErrorReason)
             .Build();
-        bool ephemeral = result is not GudgeonResult gudgeonResult || gudgeonResult.IsEphemeral;
 
         if (context.Interaction.HasResponded)
             await context.Interaction.FollowupAsync(embed: embed);

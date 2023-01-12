@@ -29,7 +29,7 @@ public class GeneralModule : GudgeonModuleBase
         user ??= Context.User;
 
         var embed = new EmbedBuilder()
-            .WithTitle($"{user.Username}#{user.Discriminator}")
+            .WithTitle(user.ToString())
             .WithImageUrl(user.GetAvatarUrl(size: 4096) ?? user.GetDefaultAvatarUrl())
             .WithColor(Colors.Primary)
             .Build();
