@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.Interactions;
 using Fergun.Interactive;
 using Gudgeon.Common.Styles;
@@ -36,7 +36,7 @@ public class ModerationModule : GudgeonModuleBase
         channel ??= Context.Channel as INestedChannel;
 
         await channel.SyncPermissionsAsync();
-        return GudgeonResult.FromSuccess("Channel permissions have been synced.", true);
+        return GudgeonResult.FromSuccess("Channel permissions have been synced.");
     }
 
     [RequireBotPermission(GuildPermission.ManageNicknames)]

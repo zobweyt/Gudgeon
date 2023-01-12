@@ -82,11 +82,8 @@ internal sealed class InteractionHandler : DiscordClientService
         bool ephemeral = result is not GudgeonResult gudgeonResult || gudgeonResult.IsEphemeral;
 
         if (context.Interaction.HasResponded)
-        {
-            await context.Interaction.FollowupAsync(embed: embed, ephemeral: ephemeral);
-            return;
-        }
-
-        await context.Interaction.RespondAsync(embed: embed, ephemeral: ephemeral);
+            await context.Interaction.FollowupAsync(embed: embed);
+        else
+            await context.Interaction.RespondAsync(embed: embed);
     }
 }
