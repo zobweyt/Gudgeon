@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.Interactions;
 
 namespace Gudgeon;
@@ -12,7 +12,7 @@ public sealed class DoHierarchyCheckAttribute : ParameterPreconditionAttribute
 
         int targetHieararchy = value switch
         {
-            IRole role => role.IsManaged ? int.MaxValue : role.Position,
+            IRole role => context.Guild.EveryoneRole.Id == role.Id ? int.MaxValue : role.IsManaged ? int.MaxValue : role.Position,
             IGuildUser guildUser => guildUser.Hierarchy,
             IUser => int.MinValue,
             _ => throw new ArgumentOutOfRangeException(nameof(value), "Attribute cannot be added to this parameter.")
