@@ -1,23 +1,26 @@
-﻿namespace Gudgeon.Modules.Fun.Tiles;
+﻿using System.Text;
+using Discord;
+
+namespace Gudgeon.Modules.Fun.Tiles;
 
 internal class TilesCore
 {
+    private int[,] _board;
     private readonly Random _random = new();
     public const int MaxTile = 2048;
-    public int[,] Board { get; private set; }
     public Player Player { get; init; }
-    public int BoardSize { get; init; }
-    public TilesCore(Player player, int boardSize)
+    public int MaxBoardSize { get; init; }
+    public TilesCore(Player player, int maxBoardSize)
     {
         Player = player;
-        BoardSize = boardSize;
-        Board = new int[BoardSize, BoardSize];
+        MaxBoardSize = maxBoardSize;
+        _board = new int[MaxBoardSize, MaxBoardSize];
         TryGenerateTile();
     }
 
     public bool HasMaxTile()
     {
-        foreach (int tile in Board)
+        foreach (int tile in _board)
         {
             if (tile == MaxTile)
                 return true;
@@ -29,10 +32,10 @@ internal class TilesCore
     public bool CanShiftBoard()
     {
         int score = 0;
-        if (!TryMoveBoard((int[,])Board.Clone(), ref score, Direction.Up) &&
-            !TryMoveBoard((int[,])Board.Clone(), ref score, Direction.Down) &&
-            !TryMoveBoard((int[,])Board.Clone(), ref score, Direction.Left) &&
-            !TryMoveBoard((int[,])Board.Clone(), ref score, Direction.Right))
+        if (!TryMoveBoard((int[,])_board.Clone(), ref score, Direction.Up) &&
+            !TryMoveBoard((int[,])_board.Clone(), ref score, Direction.Down) &&
+            !TryMoveBoard((int[,])_board.Clone(), ref score, Direction.Left) &&
+            !TryMoveBoard((int[,])_board.Clone(), ref score, Direction.Right))
             return false;
         return true;
     }
@@ -40,11 +43,11 @@ internal class TilesCore
     public bool TryGenerateTile()
     {
         List<Tuple<int, int>> emptySlots = new();
-        for (int row = 0; row < BoardSize; row++)
+        for (int row = 0; row < MaxBoardSize; row++)
         {
-            for (int column = 0; column < BoardSize; column++)
+            for (int column = 0; column < MaxBoardSize; column++)
             {
-                if (Board[row, column] == 0)
+                if (_board[row, column] == 0)
                 {
                     emptySlots.Add(new Tuple<int, int>(row, column));
                 }
@@ -56,7 +59,7 @@ internal class TilesCore
             int tile = _random.Next(0, emptySlots.Count);
             int value = _random.Next(0, 100) < 95 ? 2 : 4;
             Player.Score += value;
-            Board[emptySlots[tile].Item1, emptySlots[tile].Item2] = value;
+            _board[emptySlots[tile].Item1, emptySlots[tile].Item2] = value;
             return true;
         }
         return false;
@@ -66,7 +69,7 @@ internal class TilesCore
     {
         int score = 0;
 
-        if (TryMoveBoard(Board, ref score, direction))
+        if (TryMoveBoard(_board, ref score, direction))
         {
             TryGenerateTile();
             Player.Score += score;
@@ -92,18 +95,18 @@ internal class TilesCore
             direction switch
             {
                 Direction.Up => (x, y),
-                Direction.Down => (BoardSize - x - 1, y),
+                Direction.Down => (MaxBoardSize - x - 1, y),
                 Direction.Left => (x, y),
-                Direction.Right => (x, BoardSize - y - 1),
+                Direction.Right => (x, MaxBoardSize - y - 1),
                 _ => throw new NotImplementedException(),
             };
 
-        bool[,] locked = new bool[BoardSize, BoardSize];
+        bool[,] locked = new bool[MaxBoardSize, MaxBoardSize];
         bool update = false;
 
-        for (int row = 0; row < BoardSize; row++)
+        for (int row = 0; row < MaxBoardSize; row++)
         {
-            for (int column = 0; column < BoardSize; column++)
+            for (int column = 0; column < MaxBoardSize; column++)
             {
                 var (tempi, tempj) = Map(row, column);
                 if (board[tempi, tempj] == 0)
@@ -112,8 +115,8 @@ internal class TilesCore
                 }
             KeepChecking:
                 var (adji, adjj) = Adjacent(tempi, tempj);
-                if (adji < 0 || adji >= BoardSize ||
-                    adjj < 0 || adjj >= BoardSize ||
+                if (adji < 0 || adji >= MaxBoardSize ||
+                    adjj < 0 || adjj >= MaxBoardSize ||
                     locked[adji, adjj])
                 {
                     continue;
@@ -138,5 +141,33 @@ internal class TilesCore
             }
         }
         return update;
+    }
+
+    public string ToDiscordMessageContent()
+    {
+        StringBuilder builder = new(":black_large_square:", DiscordConfig.MaxMessageSize);
+
+        for (int letter = 0; letter < MaxBoardSize; letter++)
+        {
+            builder.AppendFormat("{0} ", Emojis.Letters[letter]);
+        }
+
+        builder.AppendLine();
+
+        for (int row = 0; row < MaxBoardSize; row++)
+        {
+            builder.Append(Emojis.Numbers[row]);
+            
+            for (int column = 0; column < MaxBoardSize; column++)
+            {
+                builder.AppendFormat("{0} ", Emojis.Tiles[_board[row, column]]);
+            }
+
+            builder.AppendLine();
+        }
+        
+        builder.Append($"{Player.User.Mention} | score: **{Player.Score}**");
+
+        return builder.ToString();
     }
 }

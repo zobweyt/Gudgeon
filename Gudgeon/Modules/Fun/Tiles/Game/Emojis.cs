@@ -2,7 +2,6 @@ namespace Gudgeon.Modules.Fun.Tiles;
 
 internal static class Emojis
 {
-    public const string BlackLargeSquare = ":black_large_square:";
     public static readonly Dictionary<int, string> Tiles = new()
     {
         [0] = "<:tile_empty:971319911131533342>",
