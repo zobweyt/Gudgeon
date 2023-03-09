@@ -20,7 +20,7 @@ public class ModerationModule : GudgeonModuleBase
         [Summary("amount", $"The number of messages to clean up.")][MinValue(2), MaxValue(100)] int amount)
     {
         await DeferAsync(ephemeral: true);
-
+        
         var messages = await Context.Channel.GetMessagesAsync(amount + 1).FlattenAsync();
         var youngMessages = messages.Skip(1).Where(x => x.Timestamp > DateTime.UtcNow.AddDays(-14));
         await (Context.Channel as ITextChannel).DeleteMessagesAsync(youngMessages);
@@ -116,11 +116,11 @@ public class ModerationModule : GudgeonModuleBase
         [Summary("user", "The user to timeout")][DoHierarchyCheck] IGuildUser user,
         [Summary("span", "The span of timeout (ex. 12m, 32s)")] TimeSpan span)
     {
-        if (user.TimedOutUntil != null && user.TimedOutUntil.Value >= DateTime.Now + span)
+        if (user.TimedOutUntil != null && user.TimedOutUntil.Value >= DateTime.UtcNow + span)
             return GudgeonResult.FromError($"{user.Mention} has been already timed out until <t:{(user.TimedOutUntil.Value).ToUnixTimeSeconds()}:f>.");
 
         await user.SetTimeOutAsync(span);
-        return GudgeonResult.FromSuccess($"{user.Mention} has been timed out until <t:{(DateTimeOffset.Now + span).ToUnixTimeSeconds()}:f>.");
+        return GudgeonResult.FromSuccess($"{user.Mention} has been timed out until <t:{(DateTimeOffset.UtcNow + span).ToUnixTimeSeconds()}:f>.");
     }
 
     [RequireBotPermission(GuildPermission.ModerateMembers)]
