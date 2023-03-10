@@ -23,7 +23,7 @@ public class GeneralModule : GudgeonModuleBase
         await RespondAsync(embed: embed);
     }
 
-    [SlashCommand("avatar", "Get a user avatar")]
+    [SlashCommand("avatar", "Get an user avatar in high quality")]
     public async Task AvatarAsync(IUser? user = null)
     {
         user ??= Context.User;

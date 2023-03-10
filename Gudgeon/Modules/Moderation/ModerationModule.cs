@@ -40,7 +40,7 @@ public class ModerationModule : GudgeonModuleBase
     }
 
     [RequireBotPermission(GuildPermission.ManageNicknames)]
-    [SlashCommand("nickname", "Change a user nickname")]
+    [SlashCommand("nickname", "Change an user nickname")]
     public async Task<RuntimeResult> NicknameAsync(
         [Summary("user", "The user to change nickname")][DoHierarchyCheck] IGuildUser user, 
         [Summary("nickname", "The nickname to be set")][MaxLength(32)] string? nickname = null)
@@ -53,7 +53,7 @@ public class ModerationModule : GudgeonModuleBase
 
     [RateLimit(seconds: 4, requests: 1)]
     [RequireBotPermission(GuildPermission.BanMembers)]
-    [SlashCommand("ban", "Ban a user")]
+    [SlashCommand("ban", "Ban an user")]
     public async Task<RuntimeResult> BanAsync(
         [Summary("user", "The user to ban")][DoHierarchyCheck] IUser user,
         [Summary("reason", "The ban reason")][MaxLength(512)] string? reason = null,
@@ -89,7 +89,7 @@ public class ModerationModule : GudgeonModuleBase
     }
 
     [RequireBotPermission(GuildPermission.BanMembers)]
-    [SlashCommand("unban", "Unban a user")]
+    [SlashCommand("unban", "Unban an user")]
     public async Task<RuntimeResult> UnbanAsync(
         [Summary("user", "The user to unban")] IUser user)
     {
@@ -101,7 +101,7 @@ public class ModerationModule : GudgeonModuleBase
     }
 
     [RequireBotPermission(GuildPermission.ModerateMembers)]
-    [SlashCommand("kick", "Kick a user")]
+    [SlashCommand("kick", "Kick an user")]
     public async Task<RuntimeResult> KickAsync(
         [Summary("user", "The user to kick")][DoHierarchyCheck] IGuildUser user,
         [Summary("reason", "The kick reason")][MaxLength(512)] string? reason = null)
@@ -111,7 +111,7 @@ public class ModerationModule : GudgeonModuleBase
     }
 
     [RequireBotPermission(GuildPermission.ModerateMembers)]
-    [SlashCommand("mute", "Timeout a user")]
+    [SlashCommand("mute", "Timeout an user")]
     public async Task<RuntimeResult> MuteAsync(
         [Summary("user", "The user to timeout")][DoHierarchyCheck] IGuildUser user,
         [Summary("span", "The span of timeout (ex. 12m, 32s)")] TimeSpan span)
@@ -124,7 +124,7 @@ public class ModerationModule : GudgeonModuleBase
     }
 
     [RequireBotPermission(GuildPermission.ModerateMembers)]
-    [SlashCommand("unmute", "Remove a user timeout")]
+    [SlashCommand("unmute", "Remove an user timeout")]
     public async Task<RuntimeResult> UnmuteAsync(
         [Summary("user", "The user to remove timeout")][DoHierarchyCheck] IGuildUser user)
     {
