@@ -16,12 +16,7 @@ public class TilesModule : GameModuleBase
     {
         string endReason = await StartGameAsync(maxBoardSize);
         
-        IUserMessage? response = await GetOriginalResponseAsync();
-
-        if (response != null)
-        {
-            await response.ModifyAsync(message => message.Components = new ComponentBuilder().Build());
-        }
+        await ModifyOriginalResponseAsync(message => message.Components = new ComponentBuilder().Build());
 
         await FollowupAsync(endReason);
     }
