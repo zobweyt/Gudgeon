@@ -1,8 +1,4 @@
-﻿using Discord;
-using Discord.Interactions;
-using Fergun.Interactive;
-
-namespace Gudgeon;
+﻿namespace Gudgeon;
 
 [RequireContext(ContextType.Guild)]
 [RequireBotPermission(ChannelPermission.ViewChannel)]
@@ -10,9 +6,12 @@ namespace Gudgeon;
 [RequireBotPermission(ChannelPermission.SendMessages)]
 public abstract class GudgeonModuleBase : InteractionModuleBase<SocketInteractionContext>
 {
-    protected readonly InteractiveService _interactive;
-    protected GudgeonModuleBase(InteractiveService interactive)
+    protected readonly InteractiveService _interactiveService;
+    protected readonly GudgeonDbContext _dbContext;
+
+    protected GudgeonModuleBase(InteractiveService interactive, GudgeonDbContext dbContext)
     {
-        _interactive = interactive;
+        _interactiveService = interactive;
+        _dbContext = dbContext;
     }
 }

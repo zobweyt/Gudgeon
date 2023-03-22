@@ -1,37 +1,36 @@
 ﻿using System.Reflection;
-using Discord;
 using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
-using Discord.Interactions;
 using Discord.WebSocket;
-using Gudgeon.Common.Styles;
+using Gudgeon.Styles;
 
 namespace Gudgeon.Services;
 
 internal sealed class InteractionHandler : DiscordClientService
 {
-    private readonly IServiceProvider _provider;
-    private readonly InteractionService _service;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly InteractionService _interactionService;
     private readonly IHostEnvironment _environment;
     private readonly IConfiguration _configuration;
 
-    public InteractionHandler(DiscordSocketClient client, ILogger<DiscordClientService> logger, IServiceProvider provider, InteractionService service, IHostEnvironment environment, IConfiguration configuration)
+    public InteractionHandler(DiscordSocketClient client, ILogger<DiscordClientService> logger, IServiceProvider serviceProvider, InteractionService interactionService, IHostEnvironment environment, IConfiguration configuration)
         : base(client, logger)
     {
-        _provider = provider;
-        _service = service;
+        _serviceProvider = serviceProvider;
+        _interactionService = interactionService;
         _environment = environment;
         _configuration = configuration;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         Client.InteractionCreated += InteractionCreatedAsync;
-        _service.InteractionExecuted += InteractionExecutedAsync;
+        _interactionService.InteractionExecuted += InteractionExecutedAsync;
 
-        await _service.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
+        var scope = _serviceProvider.CreateScope();
+        await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), scope.ServiceProvider);
 
-        await Client.WaitForReadyAsync(stoppingToken);
+        await Client.WaitForReadyAsync(cancellationToken);
         await Client.SetGameAsync("swiming", type: ActivityType.Competing);
         await RegisterCommandsAsync();
     }
@@ -43,7 +42,7 @@ internal sealed class InteractionHandler : DiscordClientService
         if (_environment.IsDevelopment())
         {
             await Client.Rest.DeleteAllGlobalCommandsAsync();
-            await _service.RegisterCommandsToGuildAsync(devGuildId);
+            await _interactionService.RegisterCommandsToGuildAsync(devGuildId);
             return;
         }
         
@@ -52,7 +51,7 @@ internal sealed class InteractionHandler : DiscordClientService
         else
             Logger.LogWarning("Application commands for development guild could be duplicated due not to DevGuild specified.");
 
-        await _service.RegisterCommandsGloballyAsync();
+        await _interactionService.RegisterCommandsGloballyAsync();
     }
 
     private async Task InteractionCreatedAsync(SocketInteraction interaction)
@@ -60,7 +59,7 @@ internal sealed class InteractionHandler : DiscordClientService
         try
         {
             var context = new SocketInteractionContext(Client, interaction);
-            await _service.ExecuteCommandAsync(context, _provider);
+            await _interactionService.ExecuteCommandAsync(context, _serviceProvider);
         }
         catch (Exception exception)
         {

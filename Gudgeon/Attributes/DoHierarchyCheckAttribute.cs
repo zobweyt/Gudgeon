@@ -1,7 +1,4 @@
-﻿using Discord;
-using Discord.Interactions;
-
-namespace Gudgeon;
+﻿namespace Gudgeon;
 
 public sealed class DoHierarchyCheckAttribute : ParameterPreconditionAttribute
 {

@@ -1,4 +1,4 @@
-﻿namespace Gudgeon.Common.Styles;
+﻿namespace Gudgeon.Styles;
 
 internal class SuccessStyle : EmbedStyle
 {

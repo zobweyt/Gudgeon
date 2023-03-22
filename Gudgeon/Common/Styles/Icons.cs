@@ -1,4 +1,4 @@
-﻿namespace Gudgeon;
+﻿namespace Gudgeon.Styles;
 
 public static class Icons
 {

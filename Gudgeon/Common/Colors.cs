@@ -1,6 +1,4 @@
-﻿using Discord;
-
-namespace Gudgeon;
+﻿namespace Gudgeon;
 
 public static class Colors
 {

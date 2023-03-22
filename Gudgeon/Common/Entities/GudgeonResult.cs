@@ -1,6 +1,4 @@
-﻿using Discord.Interactions;
-
-namespace Gudgeon;
+﻿namespace Gudgeon;
 
 public class GudgeonResult : RuntimeResult
 {

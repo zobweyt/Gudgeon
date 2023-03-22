@@ -1,6 +1,4 @@
-﻿using Discord;
-using Discord.Interactions;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using System.Collections.Concurrent;
 
 namespace Gudgeon;
@@ -14,7 +12,7 @@ public sealed class RateLimitAttribute : PreconditionAttribute
     private readonly int _requests;
     private readonly int _seconds;
     
-    public RateLimitAttribute(int seconds = 4, int requests = 1, RateLimitType context = RateLimitType.User, RateLimitBaseType baseType = RateLimitBaseType.BaseOnCommandInfo)
+    public RateLimitAttribute(int seconds, int requests = 1, RateLimitType context = RateLimitType.User, RateLimitBaseType baseType = RateLimitBaseType.BaseOnCommandInfo)
     {
         _context = context;
         _requests = requests;
