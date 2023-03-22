@@ -1,8 +1,8 @@
 using Discord;
 
-namespace Gudgeon.Modules.Fun.Tiles;
+namespace Gudgeon.Entertainment.Tiles;
 
-class Player
+public class Player
 {
     public IUser User { get; init; }
     public int Score { get; set; } = 0;

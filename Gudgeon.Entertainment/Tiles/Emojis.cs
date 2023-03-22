@@ -1,6 +1,6 @@
-namespace Gudgeon.Modules.Fun.Tiles;
+namespace Gudgeon.Entertainment.Tiles;
 
-internal static class Emojis
+public static class Emojis
 {
     public static readonly Dictionary<int, string> Tiles = new()
     {
@@ -17,7 +17,7 @@ internal static class Emojis
         [1024] = "<:tile_1024:971335974640558131>",
         [2048] = "<:tile_2048:971336371899883560>"
     };
-    public static readonly string[] Numbers = 
+    public static readonly string[] Numbers =
     {
         ":one:", ":two:", ":three:", ":four:", ":five:", ":six:"
     };
