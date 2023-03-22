@@ -1,7 +1,6 @@
-﻿using Discord;
+﻿using Microsoft.EntityFrameworkCore;
 using Discord.Addons.Hosting;
 using Discord.WebSocket;
-using Fergun.Interactive;
 using Gudgeon.Services;
 
 var host = Host.CreateDefaultBuilder()
@@ -12,14 +11,15 @@ var host = Host.CreateDefaultBuilder()
             LogLevel = LogSeverity.Debug,
             AlwaysDownloadUsers = true,
             GatewayIntents = GatewayIntents.All,
-            MessageCacheSize = 200
+            MessageCacheSize = 200,
+            LogGatewayIntentWarnings = false
         };
 
         string? token = context.Configuration["Token"];
 
         if (string.IsNullOrEmpty(token))
-            throw new ArgumentNullException(nameof(token), "The token has not been specified.");
-    
+            throw new InvalidOperationException("The bot token has not been specified.");
+
         config.Token = token;
     })
     .UseInteractionService((context, config) =>
@@ -29,9 +29,27 @@ var host = Host.CreateDefaultBuilder()
     })
     .ConfigureServices((context, services) =>
     {
-        services
-        .AddHostedService<InteractionHandler>()
-        .AddSingleton<InteractiveService>();
+        services.AddHostedService<InteractionHandler>();
+        services.AddHostedService<AutoroleService>();
+
+        InteractiveConfig interactiveConfig = new()
+        {
+            LogLevel = LogSeverity.Debug,
+            DeferStopPaginatorInteractions = true,
+            DefaultTimeout = TimeSpan.FromMinutes(5)
+        };
+
+        services.AddSingleton(interactiveConfig);
+        services.AddSingleton<InteractiveService>();
+
+        string? connectionString = context.Configuration.GetConnectionString("Default");
+
+        if (string.IsNullOrEmpty(connectionString))
+            throw new InvalidOperationException("The database connection string must be specified.");
+
+        ServerVersion serverVersion = ServerVersion.AutoDetect(connectionString);
+
+        services.AddDbContext<GudgeonDbContext>(options => options.UseMySql(connectionString, serverVersion));
     })
     .Build();
 

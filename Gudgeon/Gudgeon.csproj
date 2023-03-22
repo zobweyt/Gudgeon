@@ -5,14 +5,39 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UserSecretsId>74027b1a-c21d-4abb-a9fd-8667900e09b8</UserSecretsId>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Include="..\README.md">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Discord.Addons.Hosting" Version="5.2.0" />
 		<PackageReference Include="Discord.Net.Interactions" Version="3.9.0" />
 		<PackageReference Include="Fergun.Interactive" Version="1.6.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.4">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="7.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	    <ProjectReference Include="..\Gudgeon.Data\Gudgeon.Data.csproj" />
+	    <ProjectReference Include="..\Gudgeon.Entertainment\Gudgeon.Entertainment.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Using Include="Discord" />
+	  <Using Include="Discord.Interactions" />
+	  <Using Include="Fergun.Interactive" />
+	  <Using Include="Gudgeon.Data" />
 	</ItemGroup>
 
 </Project>
