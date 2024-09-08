@@ -6,8 +6,8 @@ namespace Gudgeon.Modules.Moderation;
 [RequireUserPermission(GuildPermission.Administrator)]
 public class ModerationModule : GudgeonModuleBase
 {
-    public ModerationModule(InteractiveService interactiveService, GudgeonDbContext dbContext)
-        : base(interactiveService, dbContext)
+    public ModerationModule(InteractiveService interactiveService)
+        : base(interactiveService)
     {
     }
 

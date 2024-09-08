@@ -7,11 +7,9 @@
 public abstract class GudgeonModuleBase : InteractionModuleBase<SocketInteractionContext>
 {
     protected readonly InteractiveService _interactiveService;
-    protected readonly GudgeonDbContext _dbContext;
 
-    protected GudgeonModuleBase(InteractiveService interactive, GudgeonDbContext dbContext)
+    protected GudgeonModuleBase(InteractiveService interactive)
     {
         _interactiveService = interactive;
-        _dbContext = dbContext;
     }
 }

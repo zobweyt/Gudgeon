@@ -7,8 +7,8 @@ public class GeneralModule : GudgeonModuleBase
 {
     private readonly InteractionService _interactionService;
 
-    public GeneralModule(InteractiveService interactiveService, GudgeonDbContext dbContext, InteractionService interactionService)
-        : base(interactiveService, dbContext)
+    public GeneralModule(InteractiveService interactiveService, InteractionService interactionService)
+        : base(interactiveService)
     {
         _interactionService = interactionService;
     }

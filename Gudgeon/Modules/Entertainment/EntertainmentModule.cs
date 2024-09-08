@@ -6,8 +6,8 @@ public partial class EntertainmentModule : GudgeonModuleBase
 {
     protected readonly Random _random = new();
 
-    public EntertainmentModule(InteractiveService interactiveService, GudgeonDbContext dbContext) 
-        : base(interactiveService, dbContext)
+    public EntertainmentModule(InteractiveService interactiveService) 
+        : base(interactiveService)
     {
     }
 
